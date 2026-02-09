@@ -5,10 +5,10 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://prithviai-api.onrender.com/api/:path*"
+      "destination": "https://prithvi-3qiu.onrender.com/api/:path*"
     }
   ],
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://prithviai-api.onrender.com"
+    "NEXT_PUBLIC_API_URL": "https://prithvi-3qiu.onrender.com"
   }
 }
