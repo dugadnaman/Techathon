@@ -1,0 +1,44 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Install Backend Dependencies",
+			"type": "shell",
+			"command": "cd c:\\Users\\dell\\Desktop\\Techathon\\PrithviAI\\backend && pip install -r requirements.txt"
+		},
+		{
+			"label": "Install Backend Deps",
+			"type": "shell",
+			"command": "cd c:\\Users\\dell\\Desktop\\Techathon\\PrithviAI\\backend; pip install -r requirements.txt"
+		},
+		{
+			"label": "Install Deps Fresh",
+			"type": "shell",
+			"command": "cd c:\\Users\\dell\\Desktop\\Techathon\\PrithviAI\\backend; pip install -r requirements.txt"
+		},
+		{
+			"label": "PrithviAI Backend",
+			"type": "shell",
+			"command": "cd c:\\Users\\dell\\Desktop\\Techathon\\PrithviAI\\backend; python -m uvicorn main:app --reload --port 8000",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "PrithviAI Frontend",
+			"type": "shell",
+			"command": "cd c:\\Users\\dell\\Desktop\\Techathon\\PrithviAI\\frontend; npm install; npm run dev",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check npm",
+			"type": "shell",
+			"command": "cd c:\\Users\\dell\\Desktop\\Techathon\\PrithviAI\\frontend; npm --version"
+		},
+		{
+			"label": "NPM Install Frontend",
+			"type": "shell",
+			"command": "cd c:\\Users\\dell\\Desktop\\Techathon\\PrithviAI\\frontend; npm install"
+		}
+	]
+}

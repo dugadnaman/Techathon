@@ -1,0 +1,7 @@
+﻿ð¢ **Humidity: LOW**
+
+Humidity: **57%** | Temperature: **27.0Â°C**
+
+Humidity is slightly high at 57%.
+
+**Advice:** Normal precautions sufficient.

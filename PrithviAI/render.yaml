@@ -1,0 +1,20 @@
+# Render.com Free Tier Deployment (Backend)
+# Free: 750 hours/month, auto-sleep after 15 min inactivity
+# Deploy: Connect GitHub repo → Render auto-detects this file
+
+services:
+  - type: web
+    name: prithviai-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: OPENWEATHER_API_KEY
+        sync: false
+      - key: AQICN_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DATA_DIR
+        value: /tmp/data
