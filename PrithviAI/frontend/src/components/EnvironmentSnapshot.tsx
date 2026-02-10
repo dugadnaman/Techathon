@@ -32,6 +32,16 @@ export default function EnvironmentSnapshot({ data, loading, language = 'en' }: 
 
   if (!data) return null;
 
+  // AQI category label based on US EPA standards
+  const getAqiCategory = (aqi: number): string => {
+    if (aqi <= 50) return 'Good';
+    if (aqi <= 100) return 'Moderate';
+    if (aqi <= 150) return 'Unhealthy (SG)';
+    if (aqi <= 200) return 'Unhealthy';
+    if (aqi <= 300) return 'Very Unhealthy';
+    return 'Hazardous';
+  };
+
   const metrics = [
     {
       label: t('temperature', language),
@@ -43,9 +53,9 @@ export default function EnvironmentSnapshot({ data, loading, language = 'en' }: 
     {
       label: t('airQuality', language),
       value: `AQI ${data.aqi}`,
-      sub: `PM2.5: ${data.pm25.toFixed(0)}`,
+      sub: `${getAqiCategory(data.aqi)} · PM2.5: ${data.pm25.toFixed(0)} µg/m³`,
       icon: <Wind size={18} className="text-blue-400" />,
-      color: data.aqi > 150 ? 'text-red-600' : data.aqi > 100 ? 'text-amber-600' : 'text-green-600',
+      color: data.aqi > 200 ? 'text-purple-700' : data.aqi > 150 ? 'text-red-600' : data.aqi > 100 ? 'text-amber-600' : data.aqi > 50 ? 'text-yellow-600' : 'text-green-600',
     },
     {
       label: t('humidity', language),

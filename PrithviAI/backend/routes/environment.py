@@ -14,9 +14,9 @@ router = APIRouter(prefix="/api/environment", tags=["Environment"])
 
 @router.get("/current", response_model=EnvironmentData)
 async def get_current_environment(
-    lat: float = Query(default=19.076, description="Latitude"),
-    lon: float = Query(default=72.8777, description="Longitude"),
-    city: str = Query(default="Mumbai", description="City name"),
+    lat: float = Query(default=18.5204, description="Latitude"),
+    lon: float = Query(default=73.8567, description="Longitude"),
+    city: str = Query(default="Pune", description="City name"),
 ):
     """
     Get current environmental data from all sources.
@@ -28,8 +28,8 @@ async def get_current_environment(
 
 @router.get("/forecast")
 async def get_forecast(
-    lat: float = Query(default=19.076, description="Latitude"),
-    lon: float = Query(default=72.8777, description="Longitude"),
+    lat: float = Query(default=18.5204, description="Latitude"),
+    lon: float = Query(default=73.8567, description="Longitude"),
 ):
     """Get 48-hour environmental forecast data."""
     forecast_raw = await fetch_weather_forecast(lat, lon)
