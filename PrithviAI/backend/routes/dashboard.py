@@ -10,6 +10,7 @@ from models.schemas import RiskLevel, AgeGroup, ActivityIntent
 from services.data_aggregator import get_aggregated_environment
 from intelligence.risk_engine import risk_engine
 import asyncio
+import traceback
 
 router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
 
@@ -43,12 +44,13 @@ async def get_dashboard_summary():
                 "name": area["name"],
                 "lat": area["lat"],
                 "lon": area["lon"],
-                "safety_level": safety.overall_risk.value,
+                "safety_level": safety.overall_level.value,
                 "score": round(safety.overall_score),
                 "top_concern": top_risk.name if top_risk else "None",
             }
         except Exception as e:
             print(f"[Dashboard] Error assessing {area['name']}: {e}")
+            traceback.print_exc()
             return {
                 "name": area["name"],
                 "lat": area["lat"],

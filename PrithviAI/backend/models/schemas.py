@@ -114,9 +114,9 @@ class Forecast(BaseModel):
 
 class RiskAssessmentRequest(BaseModel):
     """User request for risk assessment."""
-    latitude: float = Field(default=19.076)
-    longitude: float = Field(default=72.8777)
-    city: str = Field(default="Mumbai")
+    latitude: float = Field(default=18.5204)
+    longitude: float = Field(default=73.8567)
+    city: str = Field(default="Pune")
     age_group: AgeGroup = Field(default=AgeGroup.ELDERLY)
     activity: ActivityIntent = Field(default=ActivityIntent.WALKING)
     language: Language = Field(default=Language.ENGLISH)
@@ -126,9 +126,9 @@ class RiskAssessmentRequest(BaseModel):
 class ChatRequest(BaseModel):
     """User chat message."""
     message: str
-    latitude: float = Field(default=19.076)
-    longitude: float = Field(default=72.8777)
-    city: str = Field(default="Mumbai")
+    latitude: float = Field(default=18.5204)
+    longitude: float = Field(default=73.8567)
+    city: str = Field(default="Pune")
     age_group: AgeGroup = Field(default=AgeGroup.ELDERLY)
     language: Language = Field(default=Language.ENGLISH)
     session_id: Optional[str] = None
