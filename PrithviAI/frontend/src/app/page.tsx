@@ -62,6 +62,8 @@ export default function HomePage() {
 
   // Custom coordinates when using detected location outside preset cities
   const [customCoords, setCustomCoords] = useState<{ lat: number; lon: number; label: string } | null>(null);
+  // Precise locality text shown after detection (e.g. "Koregaon Park, Pune")
+  const [detectedLocality, setDetectedLocality] = useState<string | null>(null);
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [locationDetected, setLocationDetected] = useState(false);
   const geoInitDone = useRef(false);
@@ -86,24 +88,63 @@ export default function HomePage() {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
+
+        // Always reverse-geocode to get the precise locality name
+        let locality = '';
+        let areaName = '';
+        let cityName = '';
+        let stateName = '';
+        try {
+          const res = await fetch(
+            `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=e503869a950072c03bdd6d06b1ccc7b0`
+          );
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.[0]) {
+              cityName = data[0].name || '';
+              stateName = data[0].state || '';
+            }
+          }
+        } catch { /* fallback below */ }
+
+        // Try Nominatim for more granular area name (suburb/neighbourhood)
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=16&addressdetails=1`,
+            { headers: { 'Accept-Language': 'en' } }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            const addr = data?.address;
+            if (addr) {
+              areaName = addr.suburb || addr.neighbourhood || addr.village || addr.town || addr.county || '';
+            }
+          }
+        } catch { /* use OWM data */ }
+
+        // Build a precise locality string like "Koregaon Park, Pune" or "Andheri, Mumbai"
+        if (areaName && cityName) {
+          locality = `${areaName}, ${cityName}`;
+        } else if (areaName) {
+          locality = areaName;
+        } else if (cityName && stateName) {
+          locality = `${cityName}, ${stateName}`;
+        } else if (cityName) {
+          locality = cityName;
+        } else {
+          locality = `${latitude.toFixed(4)}°N, ${longitude.toFixed(4)}°E`;
+        }
+
+        setDetectedLocality(locality);
+
         const nearest = findNearestCity(latitude, longitude);
         if (nearest) {
-          // User is near a supported city — select it
+          // User is near a supported city — use it for API requests
           setCity(nearest);
           setCustomCoords(null);
         } else {
-          // User is far from preset cities — reverse geocode for name, use exact coords
-          let label = `${latitude.toFixed(2)}°N, ${longitude.toFixed(2)}°E`;
-          try {
-            const res = await fetch(
-              `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=e503869a950072c03bdd6d06b1ccc7b0`
-            );
-            if (res.ok) {
-              const data = await res.json();
-              if (data?.[0]?.name) label = data[0].name;
-            }
-          } catch { /* use coordinate label */ }
-          setCustomCoords({ lat: latitude, lon: longitude, label });
+          // User is far from preset cities — use exact coords
+          setCustomCoords({ lat: latitude, lon: longitude, label: cityName || locality });
           setCity('__custom__');
         }
         setLocationDetected(true);
@@ -113,7 +154,7 @@ export default function HomePage() {
         // Permission denied or error — keep Pune default
         setDetectingLocation(false);
       },
-      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
     );
   }, []);
 
@@ -214,7 +255,7 @@ export default function HomePage() {
             ) : (
               <LocateFixed size={15} />
             )}
-            {detectingLocation ? 'Detecting...' : locationDetected ? 'Located' : 'Detect Location'}
+            {detectingLocation ? 'Detecting...' : locationDetected ? 'Re-detect' : 'Detect Location'}
           </button>
 
           <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2 border border-gray-200 shadow-sm">
@@ -251,6 +292,22 @@ export default function HomePage() {
             {t('refresh', language)}
           </button>
         </div>
+
+        {/* Detected Location Banner */}
+        {detectedLocality && locationDetected && (
+          <div className="flex items-center justify-center gap-2 mb-6 px-4 py-2.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl max-w-lg mx-auto">
+            <MapPin size={16} className="text-green-600 flex-shrink-0" />
+            <span className="text-sm text-gray-700">
+              Your location: <span className="font-semibold text-green-800">{detectedLocality}</span>
+            </span>
+          </div>
+        )}
+        {detectingLocation && (
+          <div className="flex items-center justify-center gap-2 mb-6 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl max-w-lg mx-auto">
+            <Loader2 size={16} className="text-gray-400 animate-spin flex-shrink-0" />
+            <span className="text-sm text-gray-500">Detecting your location...</span>
+          </div>
+        )}
 
         {/* Error State */}
         {error && (
