@@ -2,7 +2,7 @@
 PrithviAI — Risk Intelligence Engine
 Central orchestrator that collects all data and computes the full risk profile.
 """
-
+  
 from typing import Optional
 from models.schemas import (
     EnvironmentData, SafetyIndex, RiskFactor, AgeGroup,
