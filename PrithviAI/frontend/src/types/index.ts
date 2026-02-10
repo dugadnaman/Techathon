@@ -31,6 +31,7 @@ export interface SafetyIndex {
   summary: string;
   recommendations: string[];
   timestamp: string;
+  data_quality?: DataQuality;
 }
 
 // ─── Environment Data ────────────────────────────────────
@@ -50,6 +51,7 @@ export interface EnvironmentData {
   visibility: number;
   weather_desc: string;
   timestamp: string;
+  data_quality?: DataQuality;
 }
 
 // ─── Forecast ────────────────────────────────────────────
@@ -76,6 +78,29 @@ export interface DailySummary {
   morning_advice: string;
   afternoon_advice: string;
   evening_advice: string;
+}
+
+// ─── Data Quality / Confidence ───────────────────────────
+
+export type ConfidenceLevel = 'HIGH' | 'MEDIUM' | 'LOW';
+export type FreshnessLabel = 'Fresh' | 'Slightly Stale' | 'Stale';
+
+export interface FreshnessInfo {
+  freshness_label: FreshnessLabel;
+  freshness_minutes: number;
+  timestamp_iso: string | null;
+}
+
+export interface ConfidenceInfo {
+  confidence_score: number;
+  confidence_level: ConfidenceLevel;
+  confidence_reasons: string[];
+}
+
+export interface DataQuality {
+  freshness: FreshnessInfo;
+  confidence: ConfidenceInfo;
+  sources?: Record<string, string>;
 }
 
 // ─── Chat ────────────────────────────────────────────────
@@ -151,6 +176,7 @@ export interface LocationData {
   environment: EnvironmentData;
   safety_index: SafetyIndex;
   timestamp: string;
+  data_quality?: DataQuality;
 }
 
 export interface MapChatMessage {

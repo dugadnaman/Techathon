@@ -9,6 +9,7 @@ import type { SafetyIndex } from '@/types';
 import type { Language } from '@/types';
 import { getRiskColor, getRiskBadgeBg, getScoreRingColor } from '@/lib/utils';
 import { t, tRisk } from '@/lib/translations';
+import DataConfidenceBadge from '@/components/DataConfidenceBadge';
 
 interface SafetyIndexDisplayProps {
   safetyIndex: SafetyIndex | null;
@@ -43,6 +44,13 @@ export default function SafetyIndexDisplay({ safetyIndex, loading, language = 'e
         </h2>
         <p className="text-sm text-gray-500 mt-1">{t('realtimeSafetyAssessment', language)}</p>
       </div>
+
+      {/* Data Confidence Indicator */}
+      {safetyIndex.data_quality && (
+        <div className="mb-4">
+          <DataConfidenceBadge dataQuality={safetyIndex.data_quality} />
+        </div>
+      )}
 
       {/* Circular Gauge */}
       <div className="flex justify-center mb-6">

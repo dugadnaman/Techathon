@@ -9,6 +9,7 @@ import type { EnvironmentData } from '@/types';
 import type { Language } from '@/types';
 import { Thermometer, Wind, Droplets, Sun, CloudRain, Volume2, Eye } from 'lucide-react';
 import { t } from '@/lib/translations';
+import DataConfidenceBadge from '@/components/DataConfidenceBadge';
 
 interface EnvironmentSnapshotProps {
   data: EnvironmentData | null;
@@ -102,7 +103,14 @@ export default function EnvironmentSnapshot({ data, loading, language = 'en' }: 
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div>
+      {/* Confidence indicator row */}
+      {data.data_quality && (
+        <div className="mb-3">
+          <DataConfidenceBadge dataQuality={data.data_quality} />
+        </div>
+      )}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       {metrics.map((metric) => (
         <div
           key={metric.label}
@@ -118,6 +126,7 @@ export default function EnvironmentSnapshot({ data, loading, language = 'en' }: 
           <div className="text-xs text-gray-400 mt-0.5">{metric.sub}</div>
         </div>
       ))}
+      </div>
     </div>
   );
 }

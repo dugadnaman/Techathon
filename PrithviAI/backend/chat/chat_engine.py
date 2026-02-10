@@ -16,8 +16,9 @@ from models.schemas import (
 )
 from chat.language import translate_text, translate_risk_level, get_chat_template
 from intelligence.risk_engine import risk_engine
-from services.data_aggregator import get_aggregated_environment
+from services.data_aggregator import get_aggregated_environment, get_aggregated_environment_with_quality
 from config import settings
+from intelligence.data_confidence import get_freshness_status, calculate_confidence_score, get_confidence_disclaimer
 
 
 # In-memory conversation store (session_id → list of messages)
@@ -41,12 +42,17 @@ async def process_chat(request: ChatRequest) -> ChatResponse:
     
     session_id = request.session_id or str(uuid.uuid4())
     
-    # ── Step 1: Get Environmental Data ──
-    env_data = await get_aggregated_environment(
+    # ── Step 1: Get Environmental Data + Quality Context ──
+    env_data, data_quality = await get_aggregated_environment_with_quality(
         lat=request.latitude,
         lon=request.longitude,
         city=request.city,
     )
+    
+    # ── Step 1b: Compute confidence ──
+    freshness = get_freshness_status(env_data.timestamp)
+    confidence = calculate_confidence_score(data_quality)
+    confidence_level = confidence["confidence_level"]
     
     # ── Step 2: Compute Risk Assessment ──
     activity = _infer_activity(request.message)
@@ -71,6 +77,8 @@ async def process_chat(request: ChatRequest) -> ChatResponse:
             activity=activity,
             city=request.city,
             conversation_history=history,
+            confidence_level=confidence_level,
+            confidence_reasons=confidence["confidence_reasons"],
         )
     
     # Fallback to template ONLY if Gemini completely fails
@@ -84,14 +92,19 @@ async def process_chat(request: ChatRequest) -> ChatResponse:
             age_group=request.age_group,
         )
     
-    # ── Step 5: Store conversation history ──
+    # ── Step 5: Append confidence disclaimer if needed ──
+    disclaimer = get_confidence_disclaimer(confidence_level)
+    if disclaimer and response_text:
+        response_text = response_text.rstrip() + "\n\n*" + disclaimer + "*"
+
+    # ── Step 6: Store conversation history ──
     history.append({"role": "user", "content": request.message})
     history.append({"role": "assistant", "content": response_text})
     if len(history) > MAX_HISTORY * 2:
         history = history[-(MAX_HISTORY * 2):]
     _conversation_store[session_id] = history
     
-    # ── Step 6: Translate ──
+    # ── Step 7: Translate ──
     if request.language != Language.ENGLISH:
         response_text = translate_text(response_text, request.language)
     
@@ -111,6 +124,8 @@ async def _gemini_chat(
     activity: ActivityIntent,
     city: str,
     conversation_history: List[dict],
+    confidence_level: str = "HIGH",
+    confidence_reasons: List[str] = None,
 ) -> Optional[str]:
     """
     Primary AI response using Google Gemini (new google-genai SDK).
@@ -135,6 +150,27 @@ async def _gemini_chat(
         for r in safety_index.all_risks:
             risk_details += f"  - {r.name}: {r.level.value} (score {r.score}/100) — {r.reason}\n"
 
+        # Build confidence-aware language rules
+        if confidence_level == "HIGH":
+            confidence_rules = """
+CONFIDENCE: HIGH — All data sources are live and recent.
+- Use assertive but responsible language (e.g., "The AQI is 180, which is unhealthy.")
+- Do NOT mention data quality or confidence — everything is reliable."""
+        elif confidence_level == "MEDIUM":
+            confidence_rules = f"""
+CONFIDENCE: MEDIUM — {'; '.join(confidence_reasons or ['Some data may not be fully current'])}.
+- Use cautious phrasing: "appears to be", "likely", "based on available data"
+- Mention data limitation once briefly, then focus on safety guidance
+- Never overstate risk; hedge where appropriate"""
+        else:
+            confidence_rules = f"""
+CONFIDENCE: LOW — {'; '.join(confidence_reasons or ['Limited data available'])}.
+- AVOID absolute statements about current conditions
+- Emphasize general precaution and safety-first approach
+- Mention "based on limited data" once early in the response
+- NEVER overstate risk when data is uncertain; recommend checking conditions locally
+- Prioritize safety guidance over specific numbers"""
+
         system_prompt = f"""You are Prithvi, an advanced environmental intelligence AI assistant built to protect senior citizens from environmental health hazards in India.
 
 YOUR CAPABILITIES:
@@ -153,7 +189,8 @@ CRITICAL RULES:
 7. If the user asks something unrelated to environment/health/safety, politely redirect
 8. Never repeat the same phrasing from previous conversation messages
 9. For each response, consider the specific risks currently active and relevant
-10. If multiple risks exist, prioritize the most dangerous ones"""
+10. If multiple risks exist, prioritize the most dangerous ones
+{confidence_rules}"""
 
         data_context = f"""═══ REAL-TIME ENVIRONMENTAL DATA FOR {city.upper()} ═══
 📍 Location: {city} ({env_data.timestamp.strftime('%Y-%m-%d %H:%M UTC') if env_data.timestamp else 'now'})

@@ -5,14 +5,15 @@ Endpoints for fetching current environmental data and forecasts.
 
 from fastapi import APIRouter, Query
 from typing import Optional
-from services.data_aggregator import get_aggregated_environment
+from services.data_aggregator import get_aggregated_environment_with_quality
 from services.weather_service import fetch_weather_forecast, parse_forecast_to_env_list
+from intelligence.data_confidence import get_freshness_status, calculate_confidence_score
 from models.schemas import EnvironmentData, SensorData
 
 router = APIRouter(prefix="/api/environment", tags=["Environment"])
 
 
-@router.get("/current", response_model=EnvironmentData)
+@router.get("/current")
 async def get_current_environment(
     lat: float = Query(default=18.5204, description="Latitude"),
     lon: float = Query(default=73.8567, description="Longitude"),
@@ -20,10 +21,23 @@ async def get_current_environment(
 ):
     """
     Get current environmental data from all sources.
-    Combines weather API, air quality, UV, and sensor data.
+    Includes data freshness and confidence metadata.
     """
-    env_data = await get_aggregated_environment(lat, lon, city)
-    return env_data
+    env_data, data_quality = await get_aggregated_environment_with_quality(lat, lon, city)
+
+    # Compute freshness and confidence
+    freshness = get_freshness_status(env_data.timestamp)
+    confidence = calculate_confidence_score(data_quality)
+
+    # Return env data + quality metadata (backward-compatible: extra keys ignored by old clients)
+    result = env_data.model_dump()
+    result["timestamp"] = env_data.timestamp.isoformat() + "Z" if env_data.timestamp else None
+    result["data_quality"] = {
+        "freshness": freshness,
+        "confidence": confidence,
+        "sources": data_quality.get("data_sources", {}),
+    }
+    return result
 
 
 @router.get("/forecast")

@@ -8,6 +8,7 @@
 import { Wind, Thermometer, Droplets, Sun, CloudRain, Volume2, Eye, Gauge } from 'lucide-react';
 import type { LocationData, RiskLevel } from '@/types';
 import { getRiskColor, getRiskBgColor, getRiskBadgeBg, getRiskHexColor, getRiskEmoji } from '@/lib/utils';
+import DataConfidenceBadge from '@/components/DataConfidenceBadge';
 
 interface DataPanelProps {
   data: LocationData | null;
@@ -115,6 +116,13 @@ export default function DataPanel({ data, isLoading, error }: DataPanelProps) {
             />
           </div>
         </div>
+
+        {/* Data Confidence Badge */}
+        {data.data_quality && (
+          <div className="mt-3">
+            <DataConfidenceBadge dataQuality={data.data_quality} />
+          </div>
+        )}
       </div>
 
       {/* Environmental Metrics Grid */}

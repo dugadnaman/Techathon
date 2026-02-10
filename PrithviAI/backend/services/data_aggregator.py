@@ -11,7 +11,7 @@ from services.air_quality_service import fetch_air_quality
 from services.uv_service import fetch_uv_index
 from services.sensor_service import sensor_manager
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Tuple, List
 import asyncio
 
 
@@ -23,14 +23,35 @@ async def get_aggregated_environment(
 ) -> EnvironmentData:
     """
     Aggregate data from all real-time sources into a single EnvironmentData.
-    
-    Data sources (ALL real-time APIs):
-    - OpenWeatherMap: temperature, humidity, wind, visibility, weather description
-    - AQICN + OpenWeatherMap Air Pollution: AQI, PM2.5, PM10 (cross-validated)
-    - Open-Meteo: UV index (satellite-derived, accurate)
-    - Noise: time + location model (no free real-time noise API exists)
+    Backward-compatible: returns only EnvironmentData.
     """
+    env, _ = await get_aggregated_environment_with_quality(lat, lon, city, sensor_data)
+    return env
+
+
+async def get_aggregated_environment_with_quality(
+    lat: float,
+    lon: float,
+    city: str,
+    sensor_data: Optional[SensorData] = None,
+    precision: str = "city-level",
+) -> Tuple[EnvironmentData, dict]:
+    """
+    Aggregate data from all real-time sources into EnvironmentData + data quality metadata.
     
+    Returns:
+        (EnvironmentData, data_quality_context) where data_quality_context contains:
+        - api_errors: list of API names that failed
+        - missing_metrics: list of metric names with no data
+        - is_cached: bool
+        - precision: "pinned" | "city-level" | "fallback"
+        - data_age_minutes: int
+    """
+
+    api_errors: List[str] = []
+    missing_metrics: List[str] = []
+    is_cached = False
+
     # ── Fetch ALL external APIs in parallel for speed ──
     weather_task = fetch_current_weather(lat, lon, city)
     aqi_task = fetch_air_quality(lat, lon, city)
@@ -41,16 +62,22 @@ async def get_aggregated_environment(
         return_exceptions=True
     )
     
-    # Handle exceptions gracefully
+    # Handle exceptions gracefully, track failures for confidence
     if isinstance(weather_raw, Exception):
         print(f"[Aggregator] Weather fetch failed: {weather_raw}")
         weather_raw = {"main": {}, "wind": {}, "weather": [{}], "visibility": 10000}
+        api_errors.append("weather")
+        missing_metrics.extend(["temperature", "humidity", "wind"])
     if isinstance(aqi_data, Exception):
         print(f"[Aggregator] AQI fetch failed: {aqi_data}")
         aqi_data = {"aqi": 0, "pm25": 0, "pm10": 0}
+        api_errors.append("air_quality")
+        missing_metrics.extend(["aqi", "pm25"])
     if isinstance(uv_index, Exception):
         print(f"[Aggregator] UV fetch failed: {uv_index}")
         uv_index = 0.0
+        api_errors.append("uv")
+        missing_metrics.append("uv_index")
     
     # ── Parse weather to base environment data ──
     env = parse_weather_to_env(weather_raw)
@@ -88,4 +115,21 @@ async def get_aggregated_environment(
             env.noise_db = demo.noise_db
     
     env.timestamp = datetime.utcnow()
-    return env
+
+    # ── Build data quality context for confidence calculation ──
+    data_quality = {
+        "api_errors": api_errors,
+        "missing_metrics": missing_metrics,
+        "is_cached": is_cached,
+        "precision": precision,
+        "data_age_minutes": 0,  # freshly fetched
+        "is_forecast_based": False,
+        "data_sources": {
+            "weather": "OpenWeatherMap" if "weather" not in api_errors else "fallback",
+            "air_quality": "AQICN+OWM" if "air_quality" not in api_errors else "fallback",
+            "uv": "Open-Meteo" if "uv" not in api_errors else "fallback",
+            "noise": "sensor" if (sensor_data and sensor_data.noise_db) else "model",
+        },
+    }
+
+    return env, data_quality
