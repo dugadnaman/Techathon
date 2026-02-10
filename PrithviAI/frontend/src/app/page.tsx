@@ -5,7 +5,7 @@
  * Main citizen-facing view with Safety Index, alerts, environment data, and daily summary.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Navbar from '@/components/Navbar';
 import SafetyIndexDisplay from '@/components/SafetyIndex';
 import RiskCard from '@/components/RiskCard';
@@ -15,8 +15,44 @@ import EnvironmentSnapshot from '@/components/EnvironmentSnapshot';
 import ForecastChart from '@/components/ForecastChart';
 import { assessRisk, getAlerts, getDailySummary, getCurrentEnvironment } from '@/lib/api';
 import type { SafetyIndex, HealthAlert, DailySummary, EnvironmentData, Language, AgeGroup, ActivityIntent } from '@/types';
-import { Shield, MapPin, UserCircle, Activity } from 'lucide-react';
+import { Shield, MapPin, UserCircle, Activity, LocateFixed, Loader2 } from 'lucide-react';
 import { t } from '@/lib/translations';
+
+// Accurate coordinates for each city
+const CITY_COORDS: Record<string, { lat: number; lon: number }> = {
+  Pune: { lat: 18.5204, lon: 73.8567 },
+  Mumbai: { lat: 19.0760, lon: 72.8777 },
+  Delhi: { lat: 28.6139, lon: 77.2090 },
+  Bangalore: { lat: 12.9716, lon: 77.5946 },
+  Chennai: { lat: 13.0827, lon: 80.2707 },
+  Kolkata: { lat: 22.5726, lon: 88.3639 },
+  Hyderabad: { lat: 17.3850, lon: 78.4867 },
+};
+
+/** Haversine distance (km) between two lat/lon points */
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/** Find the nearest supported city within a threshold (km) */
+function findNearestCity(lat: number, lon: number, thresholdKm = 150): string | null {
+  let best: string | null = null;
+  let bestDist = Infinity;
+  for (const [name, c] of Object.entries(CITY_COORDS)) {
+    const d = haversineKm(lat, lon, c.lat, c.lon);
+    if (d < bestDist) {
+      bestDist = d;
+      best = name;
+    }
+  }
+  return bestDist <= thresholdKm ? best : null;
+}
 
 export default function HomePage() {
   const [language, setLanguage] = useState<Language>('en');
@@ -24,18 +60,17 @@ export default function HomePage() {
   const [activity, setActivity] = useState<ActivityIntent>('walking');
   const [city, setCity] = useState('Pune');
 
-  // Accurate coordinates for each city
-  const CITY_COORDS: Record<string, { lat: number; lon: number }> = {
-    Pune: { lat: 18.5204, lon: 73.8567 },
-    Mumbai: { lat: 19.0760, lon: 72.8777 },
-    Delhi: { lat: 28.6139, lon: 77.2090 },
-    Bangalore: { lat: 12.9716, lon: 77.5946 },
-    Chennai: { lat: 13.0827, lon: 80.2707 },
-    Kolkata: { lat: 22.5726, lon: 88.3639 },
-    Hyderabad: { lat: 17.3850, lon: 78.4867 },
-  };
+  // Custom coordinates when using detected location outside preset cities
+  const [customCoords, setCustomCoords] = useState<{ lat: number; lon: number; label: string } | null>(null);
+  const [detectingLocation, setDetectingLocation] = useState(false);
+  const [locationDetected, setLocationDetected] = useState(false);
+  const geoInitDone = useRef(false);
 
-  const coords = CITY_COORDS[city] || CITY_COORDS.Pune;
+  const coords = city === '__custom__' && customCoords
+    ? { lat: customCoords.lat, lon: customCoords.lon }
+    : CITY_COORDS[city] || CITY_COORDS.Pune;
+
+  const displayCity = city === '__custom__' && customCoords ? customCoords.label : city;
 
   const [safetyIndex, setSafetyIndex] = useState<SafetyIndex | null>(null);
   const [alerts, setAlerts] = useState<HealthAlert[]>([]);
@@ -44,20 +79,67 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  /** Detect user location via browser Geolocation API */
+  const detectLocation = useCallback(() => {
+    if (!navigator.geolocation) return;
+    setDetectingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const nearest = findNearestCity(latitude, longitude);
+        if (nearest) {
+          // User is near a supported city — select it
+          setCity(nearest);
+          setCustomCoords(null);
+        } else {
+          // User is far from preset cities — reverse geocode for name, use exact coords
+          let label = `${latitude.toFixed(2)}°N, ${longitude.toFixed(2)}°E`;
+          try {
+            const res = await fetch(
+              `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=e503869a950072c03bdd6d06b1ccc7b0`
+            );
+            if (res.ok) {
+              const data = await res.json();
+              if (data?.[0]?.name) label = data[0].name;
+            }
+          } catch { /* use coordinate label */ }
+          setCustomCoords({ lat: latitude, lon: longitude, label });
+          setCity('__custom__');
+        }
+        setLocationDetected(true);
+        setDetectingLocation(false);
+      },
+      () => {
+        // Permission denied or error — keep Pune default
+        setDetectingLocation(false);
+      },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+    );
+  }, []);
+
+  // Auto-detect location on first mount
+  useEffect(() => {
+    if (!geoInitDone.current) {
+      geoInitDone.current = true;
+      detectLocation();
+    }
+  }, [detectLocation]);
+
   useEffect(() => {
     loadData();
-  }, [language, ageGroup, activity, city]);
+  }, [language, ageGroup, activity, city, customCoords]);
 
   async function loadData() {
     setLoading(true);
     setError(null);
 
+    const cityName = displayCity;
     try {
       const [riskResult, alertResult, summaryResult, envResult] = await Promise.allSettled([
-        assessRisk(coords.lat, coords.lon, city, ageGroup, activity, language),
-        getAlerts(coords.lat, coords.lon, city, ageGroup),
-        getDailySummary(coords.lat, coords.lon, city, ageGroup),
-        getCurrentEnvironment(coords.lat, coords.lon, city),
+        assessRisk(coords.lat, coords.lon, cityName, ageGroup, activity, language),
+        getAlerts(coords.lat, coords.lon, cityName, ageGroup),
+        getDailySummary(coords.lat, coords.lon, cityName, ageGroup),
+        getCurrentEnvironment(coords.lat, coords.lon, cityName),
       ]);
 
       if (riskResult.status === 'fulfilled') setSafetyIndex(riskResult.value);
@@ -97,9 +179,15 @@ export default function HomePage() {
             <MapPin size={16} className="text-green-600" />
             <select
               value={city}
-              onChange={(e) => setCity(e.target.value)}
+              onChange={(e) => {
+                setCity(e.target.value);
+                if (e.target.value !== '__custom__') setCustomCoords(null);
+              }}
               className="text-sm text-gray-700 bg-transparent outline-none cursor-pointer"
             >
+              {customCoords && (
+                <option value="__custom__">📍 {customCoords.label}</option>
+              )}
               <option value="Pune">Pune</option>
               <option value="Mumbai">Mumbai</option>
               <option value="Delhi">Delhi</option>
@@ -109,6 +197,25 @@ export default function HomePage() {
               <option value="Hyderabad">Hyderabad</option>
             </select>
           </div>
+
+          {/* Detect Location Button */}
+          <button
+            onClick={detectLocation}
+            disabled={detectingLocation}
+            className={`flex items-center gap-1.5 px-3 py-2 text-sm rounded-xl border shadow-sm transition-colors ${
+              locationDetected
+                ? 'bg-green-50 border-green-300 text-green-700'
+                : 'bg-white border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-600'
+            } ${detectingLocation ? 'opacity-60 cursor-wait' : 'cursor-pointer'}`}
+            title="Detect my location"
+          >
+            {detectingLocation ? (
+              <Loader2 size={15} className="animate-spin" />
+            ) : (
+              <LocateFixed size={15} />
+            )}
+            {detectingLocation ? 'Detecting...' : locationDetected ? 'Located' : 'Detect Location'}
+          </button>
 
           <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2 border border-gray-200 shadow-sm">
             <UserCircle size={16} className="text-green-600" />
