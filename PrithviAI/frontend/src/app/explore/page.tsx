@@ -1,32 +1,30 @@
 'use client';
 
 /**
- * PrithviAI — Map Explorer Page
- * Interactive map-based data visualization tool with integrated AI assistant.
- *
- * Components: InteractiveMap | DataPanel | MapChatBox
- * Data: OpenWeatherMap + AQICN (real-time, free tier) | Gemini AI (free tier)
+ * Prithvi — Map Explorer Page
+ * Layered map layout with floating glass sidebar and AI assistant.
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Map, Database, MessageSquare, ChevronLeft, ChevronRight, Search, Loader2, X } from 'lucide-react';
 import DataPanel from '@/components/DataPanel';
 import MapChatBox from '@/components/MapChatBox';
 import Navbar from '@/components/Navbar';
 import { getMapLandmarks, getLocationData } from '@/lib/api';
 import { t } from '@/lib/translations';
-import type { Landmark, LocationData, RiskLevel } from '@/types';
-import type { Language } from '@/types';
+import type { Landmark, LocationData, RiskLevel, Language } from '@/types';
 
-// Dynamic import to avoid SSR issues with Leaflet
+const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
 const InteractiveMap = dynamic(() => import('@/components/InteractiveMap'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full flex items-center justify-center bg-gray-50 rounded-2xl">
+    <div className="w-full h-full flex items-center justify-center bg-surface-secondary rounded-2xl">
       <div className="text-center">
-        <Loader2 className="w-8 h-8 text-green-500 animate-spin mx-auto mb-2" />
-        <p className="text-sm text-gray-400">Loading map...</p>
+        <Loader2 className="w-8 h-8 text-accent animate-spin mx-auto mb-2" />
+        <p className="text-sm text-content-secondary">Loading map...</p>
       </div>
     </div>
   ),
@@ -35,7 +33,6 @@ const InteractiveMap = dynamic(() => import('@/components/InteractiveMap'), {
 type SidebarTab = 'data' | 'chat';
 
 export default function MapExplorerPage() {
-  // ── State ──
   const [landmarks, setLandmarks] = useState<Landmark[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<{
     lat: number;
@@ -51,7 +48,6 @@ export default function MapExplorerPage() {
   const [landmarkRiskLevels, setLandmarkRiskLevels] = useState<Record<string, RiskLevel>>({});
   const [language, setLanguage] = useState<Language>('en');
 
-  // ── Load landmarks on mount ──
   useEffect(() => {
     async function fetchLandmarks() {
       try {
@@ -64,7 +60,6 @@ export default function MapExplorerPage() {
     fetchLandmarks();
   }, []);
 
-  // ── Fetch location data when a point is selected ──
   const handleLocationSelect = useCallback(
     async (lat: number, lon: number, name: string) => {
       setSelectedLocation({ lat, lon, name: name || '' });
@@ -76,8 +71,6 @@ export default function MapExplorerPage() {
       try {
         const data = await getLocationData(lat, lon, name);
         setLocationData(data);
-
-        // Update landmark risk levels cache
         if (data.location_name && data.safety_index) {
           setLandmarkRiskLevels((prev) => ({
             ...prev,
@@ -94,7 +87,6 @@ export default function MapExplorerPage() {
     [],
   );
 
-  // ── Search / filter landmarks ──
   const filteredLandmarks = useMemo(() => {
     if (!searchQuery.trim()) return landmarks;
     const q = searchQuery.toLowerCase();
@@ -104,62 +96,67 @@ export default function MapExplorerPage() {
   }, [landmarks, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16">
-      {/* Navbar */}
+    <div className="min-h-screen bg-surface-primary pt-16">
       <Navbar language={language} onLanguageChange={setLanguage} />
 
       {/* Page Header */}
-      <div className="bg-white border-b shadow-sm">
+      <div className="glass-card-solid border-b border-surface-secondary">
         <div className="max-w-[1920px] mx-auto px-4 py-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl">
+              <div className="p-2.5 bg-accent rounded-2xl">
                 <Map className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">{t('mapExplorerTitle', language)}</h1>
-                <p className="text-xs text-gray-500">
+                <h1 className="text-xl font-bold text-content-primary">{t('mapExplorerTitle', language)}</h1>
+                <p className="text-xs text-content-secondary">
                   {t('clickMapToExplore', language)}
                 </p>
               </div>
             </div>
 
-            {/* Search Bar */}
             <div className="relative max-w-xs w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-content-secondary" />
               <input
                 type="text"
                 placeholder={t('searchLocations', language)}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-8 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full pl-9 pr-8 py-2.5 text-sm bg-surface-secondary border border-surface-secondary rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40 text-content-primary placeholder:text-content-secondary"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-content-secondary hover:text-content-primary"
                 >
                   <X size={14} />
                 </button>
               )}
-              {/* Search Results Dropdown */}
-              {searchQuery && filteredLandmarks.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
-                  {filteredLandmarks.map((lm) => (
-                    <button
-                      key={lm.name}
-                      onClick={() => {
-                        handleLocationSelect(lm.lat, lm.lon, lm.name);
-                        setSearchQuery('');
-                      }}
-                      className="w-full text-left px-4 py-2.5 hover:bg-green-50 transition-colors border-b last:border-0"
-                    >
-                      <span className="text-sm font-medium text-gray-800">{lm.name}</span>
-                      <span className="text-xs text-gray-400 ml-2">{lm.description}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
+              <AnimatePresence>
+                {searchQuery && filteredLandmarks.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.2, ease: EASE_OUT }}
+                    className="absolute top-full left-0 right-0 mt-1 glass-card-solid border border-surface-secondary rounded-2xl shadow-elevated z-50 max-h-60 overflow-y-auto"
+                  >
+                    {filteredLandmarks.map((lm) => (
+                      <button
+                        key={lm.name}
+                        onClick={() => {
+                          handleLocationSelect(lm.lat, lm.lon, lm.name);
+                          setSearchQuery('');
+                        }}
+                        className="w-full text-left px-4 py-2.5 hover:bg-accent/5 transition-colors border-b border-surface-secondary last:border-0"
+                      >
+                        <span className="text-sm font-medium text-content-primary">{lm.name}</span>
+                        <span className="text-xs text-content-secondary ml-2">{lm.description}</span>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -169,7 +166,11 @@ export default function MapExplorerPage() {
       <div className="max-w-[1920px] mx-auto p-4">
         <div className="flex gap-4 h-[calc(100vh-10rem)]">
           {/* Map Area */}
-          <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? '' : 'w-full'}`}>
+          <motion.div
+            layout
+            className="flex-1"
+            transition={{ duration: 0.4, ease: EASE_OUT }}
+          >
             <InteractiveMap
               landmarks={filteredLandmarks}
               selectedLocation={selectedLocation}
@@ -177,78 +178,86 @@ export default function MapExplorerPage() {
               landmarkRiskLevels={landmarkRiskLevels}
               isLoading={isLoadingData}
             />
-          </div>
+          </motion.div>
 
-          {/* Sidebar Toggle Button */}
-          <button
+          {/* Sidebar Toggle */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="self-center p-2 bg-white border rounded-xl shadow-md hover:bg-gray-50 transition-colors z-10"
+            className="self-center p-2.5 glass-card-solid rounded-2xl shadow-elevated z-10 text-content-secondary hover:text-content-primary transition-colors"
             aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
           >
             {sidebarOpen ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-          </button>
+          </motion.button>
 
-          {/* Sidebar: Data Panel + Chat */}
-          {sidebarOpen && (
-            <div className="w-[420px] shrink-0 bg-white rounded-2xl border border-gray-200 shadow-lg flex flex-col overflow-hidden">
-              {/* Tabs */}
-              <div className="flex border-b">
-                <button
-                  onClick={() => setSidebarTab('data')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
-                    sidebarTab === 'data'
-                      ? 'text-green-700 bg-green-50 border-b-2 border-green-600'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <Database size={15} />
-                  {t('data', language)}
-                </button>
-                <button
-                  onClick={() => setSidebarTab('chat')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
-                    sidebarTab === 'chat'
-                      ? 'text-green-700 bg-green-50 border-b-2 border-green-600'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <MessageSquare size={15} />
-                  {t('navAIChat', language)}
-                </button>
-              </div>
+          {/* Sidebar */}
+          <AnimatePresence>
+            {sidebarOpen && (
+              <motion.div
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: 420, opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={{ duration: 0.4, ease: EASE_OUT }}
+                className="shrink-0 glass-card-solid rounded-3xl border border-surface-secondary shadow-elevated flex flex-col overflow-hidden"
+              >
+                {/* Tabs */}
+                <div className="flex border-b border-surface-secondary">
+                  <button
+                    onClick={() => setSidebarTab('data')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-medium transition-all ${
+                      sidebarTab === 'data'
+                        ? 'text-accent bg-accent/5 border-b-2 border-accent'
+                        : 'text-content-secondary hover:text-content-primary hover:bg-surface-secondary/50'
+                    }`}
+                  >
+                    <Database size={15} />
+                    {t('data', language)}
+                  </button>
+                  <button
+                    onClick={() => setSidebarTab('chat')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-medium transition-all ${
+                      sidebarTab === 'chat'
+                        ? 'text-accent bg-accent/5 border-b-2 border-accent'
+                        : 'text-content-secondary hover:text-content-primary hover:bg-surface-secondary/50'
+                    }`}
+                  >
+                    <MessageSquare size={15} />
+                    {t('navAIChat', language)}
+                  </button>
+                </div>
 
-              {/* Tab Content */}
-              <div className="flex-1 overflow-hidden">
-                {sidebarTab === 'data' ? (
-                  <DataPanel
-                    data={locationData}
-                    isLoading={isLoadingData}
-                    error={dataError}
-                  />
-                ) : (
-                  <MapChatBox selectedLocation={selectedLocation} />
-                )}
-              </div>
-            </div>
-          )}
+                {/* Tab Content */}
+                <div className="flex-1 overflow-hidden">
+                  {sidebarTab === 'data' ? (
+                    <DataPanel data={locationData} isLoading={isLoadingData} error={dataError} />
+                  ) : (
+                    <MapChatBox selectedLocation={selectedLocation} />
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
-      {/* Location Quick-Access Pills (bottom of map) */}
+      {/* Quick-Access Pills */}
       <div className="max-w-[1920px] mx-auto px-4 pb-4">
         <div className="flex items-center gap-2 overflow-x-auto pb-2">
-          <span className="text-xs text-gray-500 shrink-0 font-medium">{t('quick', language)}</span>
+          <span className="text-xs text-content-secondary shrink-0 font-medium">{t('quick', language)}</span>
           {landmarks.slice(0, 8).map((lm) => {
             const isActive = selectedLocation?.name === lm.name;
             const riskLevel = landmarkRiskLevels[lm.name];
             return (
-              <button
+              <motion.button
                 key={lm.name}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => handleLocationSelect(lm.lat, lm.lon, lm.name)}
-                className={`shrink-0 px-3 py-1.5 text-xs rounded-full border transition-all ${
+                className={`shrink-0 px-4 py-2 text-xs rounded-full border transition-all ${
                   isActive
-                    ? 'bg-green-600 text-white border-green-600 shadow-md'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-green-300 hover:text-green-700'
+                    ? 'bg-accent text-white border-accent shadow-glow-green'
+                    : 'glass-card-solid text-content-secondary border-surface-secondary hover:border-accent/40 hover:text-accent'
                 }`}
               >
                 {riskLevel && (
@@ -256,12 +265,12 @@ export default function MapExplorerPage() {
                     className="inline-block w-2 h-2 rounded-full mr-1.5"
                     style={{
                       backgroundColor:
-                        riskLevel === 'LOW' ? '#22c55e' : riskLevel === 'MODERATE' ? '#f59e0b' : '#ef4444',
+                        riskLevel === 'LOW' ? 'var(--risk-low)' : riskLevel === 'MODERATE' ? 'var(--risk-moderate)' : 'var(--risk-high)',
                     }}
                   />
                 )}
                 {lm.name}
-              </button>
+              </motion.button>
             );
           })}
         </div>

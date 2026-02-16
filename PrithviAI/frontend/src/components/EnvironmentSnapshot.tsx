@@ -1,15 +1,18 @@
 'use client';
 
 /**
- * PrithviAI — Environment Snapshot
- * Quick visual overview of current environmental conditions.
+ * Prithvi — Environment Snapshot
+ * Premium metric cards with staggered scale-in animations.
  */
 
+import { motion, useInView } from 'framer-motion';
+import { useRef } from 'react';
 import type { EnvironmentData } from '@/types';
 import type { Language } from '@/types';
 import { Thermometer, Wind, Droplets, Sun, CloudRain, Volume2, Eye } from 'lucide-react';
 import { t } from '@/lib/translations';
 import DataConfidenceBadge from '@/components/DataConfidenceBadge';
+import { AnimatedCounter } from '@/components/motion';
 
 interface EnvironmentSnapshotProps {
   data: EnvironmentData | null;
@@ -18,13 +21,16 @@ interface EnvironmentSnapshotProps {
 }
 
 export default function EnvironmentSnapshot({ data, loading, language = 'en' }: EnvironmentSnapshotProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-40px' });
+
   if (loading) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 animate-pulse">
-            <div className="h-4 bg-gray-200 rounded w-16 mb-2"></div>
-            <div className="h-6 bg-gray-100 rounded w-12"></div>
+          <div key={i} className="glass-card-solid rounded-2xl p-4 animate-pulse">
+            <div className="h-4 bg-surface-secondary rounded w-16 mb-2" />
+            <div className="h-6 bg-surface-secondary rounded w-12" />
           </div>
         ))}
       </div>
@@ -33,7 +39,6 @@ export default function EnvironmentSnapshot({ data, loading, language = 'en' }: 
 
   if (!data) return null;
 
-  // AQI category label based on US EPA standards
   const getAqiCategory = (aqi: number): string => {
     if (aqi <= 50) return 'Good';
     if (aqi <= 100) return 'Moderate';
@@ -46,86 +51,104 @@ export default function EnvironmentSnapshot({ data, loading, language = 'en' }: 
   const metrics = [
     {
       label: t('temperature', language),
-      value: `${data.temperature.toFixed(0)}°C`,
+      value: data.temperature.toFixed(0),
+      suffix: '°C',
       sub: `${t('feelsLike', language)} ${data.feels_like.toFixed(0)}°C`,
       icon: <Thermometer size={18} className="text-red-400" />,
-      color: data.temperature > 35 ? 'text-red-600' : data.temperature > 28 ? 'text-amber-600' : 'text-green-600',
+      riskClass: data.temperature > 35 ? 'text-risk-high' : data.temperature > 28 ? 'text-risk-moderate' : 'text-risk-low',
     },
     {
       label: t('airQuality', language),
-      value: `AQI ${data.aqi}`,
-      sub: `${getAqiCategory(data.aqi)} · PM2.5: ${data.pm25.toFixed(0)} µg/m³`,
+      value: data.aqi.toString(),
+      suffix: ' AQI',
+      sub: `${getAqiCategory(data.aqi)} · PM2.5: ${data.pm25.toFixed(0)}`,
       icon: <Wind size={18} className="text-blue-400" />,
-      color: data.aqi > 200 ? 'text-purple-700' : data.aqi > 150 ? 'text-red-600' : data.aqi > 100 ? 'text-amber-600' : data.aqi > 50 ? 'text-yellow-600' : 'text-green-600',
+      riskClass: data.aqi > 200 ? 'text-purple-500' : data.aqi > 150 ? 'text-risk-high' : data.aqi > 100 ? 'text-risk-moderate' : 'text-risk-low',
     },
     {
       label: t('humidity', language),
-      value: `${data.humidity.toFixed(0)}%`,
+      value: data.humidity.toFixed(0),
+      suffix: '%',
       sub: data.humidity > 70 ? 'High' : data.humidity < 35 ? 'Low' : 'Normal',
       icon: <Droplets size={18} className="text-cyan-400" />,
-      color: data.humidity > 75 ? 'text-amber-600' : 'text-green-600',
+      riskClass: data.humidity > 75 ? 'text-risk-moderate' : 'text-risk-low',
     },
     {
       label: t('uvIndex', language),
       value: data.uv_index.toFixed(1),
+      suffix: '',
       sub: data.uv_index > 7 ? 'Very High' : data.uv_index > 5 ? 'High' : data.uv_index > 2 ? 'Moderate' : 'Low',
       icon: <Sun size={18} className="text-yellow-400" />,
-      color: data.uv_index > 7 ? 'text-red-600' : data.uv_index > 5 ? 'text-amber-600' : 'text-green-600',
+      riskClass: data.uv_index > 7 ? 'text-risk-high' : data.uv_index > 5 ? 'text-risk-moderate' : 'text-risk-low',
     },
     {
       label: t('rainfall', language),
-      value: `${data.rainfall.toFixed(1)} mm`,
+      value: data.rainfall.toFixed(1),
+      suffix: ' mm',
       sub: data.rainfall > 7.5 ? 'Heavy' : data.rainfall > 2.5 ? 'Moderate' : data.rainfall > 0 ? 'Light' : 'None',
       icon: <CloudRain size={18} className="text-blue-500" />,
-      color: data.rainfall > 7.5 ? 'text-red-600' : data.rainfall > 2.5 ? 'text-amber-600' : 'text-green-600',
+      riskClass: data.rainfall > 7.5 ? 'text-risk-high' : data.rainfall > 2.5 ? 'text-risk-moderate' : 'text-risk-low',
     },
     {
       label: t('noise', language),
-      value: `${data.noise_db.toFixed(0)} dB`,
+      value: data.noise_db.toFixed(0),
+      suffix: ' dB',
       sub: data.noise_db > 70 ? 'Loud' : data.noise_db > 55 ? 'Moderate' : 'Quiet',
       icon: <Volume2 size={18} className="text-purple-400" />,
-      color: data.noise_db > 70 ? 'text-red-600' : data.noise_db > 55 ? 'text-amber-600' : 'text-green-600',
+      riskClass: data.noise_db > 70 ? 'text-risk-high' : data.noise_db > 55 ? 'text-risk-moderate' : 'text-risk-low',
     },
     {
       label: t('wind', language),
-      value: `${data.wind_speed.toFixed(1)} m/s`,
+      value: data.wind_speed.toFixed(1),
+      suffix: ' m/s',
       sub: data.wind_speed > 10 ? 'Strong' : data.wind_speed > 5 ? 'Moderate' : 'Light',
       icon: <Wind size={18} className="text-teal-400" />,
-      color: 'text-gray-700',
+      riskClass: 'text-content-primary',
     },
     {
       label: t('visibility', language),
-      value: `${data.visibility.toFixed(1)} km`,
+      value: data.visibility.toFixed(1),
+      suffix: ' km',
       sub: data.visibility < 2 ? 'Poor' : data.visibility < 5 ? 'Moderate' : 'Good',
-      icon: <Eye size={18} className="text-gray-400" />,
-      color: data.visibility < 2 ? 'text-red-600' : 'text-green-600',
+      icon: <Eye size={18} className="text-slate-400" />,
+      riskClass: data.visibility < 2 ? 'text-risk-high' : 'text-risk-low',
     },
   ];
 
   return (
-    <div>
-      {/* Confidence indicator row */}
+    <div ref={ref}>
+      {/* Confidence Badge */}
       {data.data_quality && (
         <div className="mb-3">
           <DataConfidenceBadge dataQuality={data.data_quality} />
         </div>
       )}
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-      {metrics.map((metric) => (
-        <div
-          key={metric.label}
-          className="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-center gap-2 mb-2">
-            {metric.icon}
-            <span className="text-xs font-medium text-gray-500">{metric.label}</span>
-          </div>
-          <div className={`text-xl font-bold ${metric.color}`}>
-            {metric.value}
-          </div>
-          <div className="text-xs text-gray-400 mt-0.5">{metric.sub}</div>
-        </div>
-      ))}
+        {metrics.map((metric, idx) => (
+          <motion.div
+            key={metric.label}
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={isInView ? { opacity: 1, scale: 1 } : {}}
+            transition={{
+              duration: 0.5,
+              delay: idx * 0.06,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="glass-card-solid rounded-2xl p-4 hover:shadow-elevated transition-shadow duration-300"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              {metric.icon}
+              <span className="text-micro uppercase tracking-wider text-content-secondary">
+                {metric.label}
+              </span>
+            </div>
+            <div className={`text-xl font-bold ${metric.riskClass}`}>
+              {metric.value}{metric.suffix}
+            </div>
+            <div className="text-xs text-content-secondary mt-1">{metric.sub}</div>
+          </motion.div>
+        ))}
       </div>
     </div>
   );

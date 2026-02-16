@@ -1,14 +1,15 @@
 'use client';
 
 /**
- * PrithviAI — Daily Summary Card
- * Shows morning/afternoon/evening advice for seniors.
+ * Prithvi — Daily Summary Card
+ * Time-block advice with theme-aware styling.
  */
 
-import { Sun, Sunset, Moon, CloudRain } from 'lucide-react';
+import { motion, useInView } from 'framer-motion';
+import { useRef } from 'react';
+import { Sun, Sunset, Moon } from 'lucide-react';
 import type { DailySummary } from '@/types';
 import type { Language } from '@/types';
-import { formatDate } from '@/lib/utils';
 import { t } from '@/lib/translations';
 
 interface DailySummaryCardProps {
@@ -18,14 +19,15 @@ interface DailySummaryCardProps {
 }
 
 export default function DailySummaryCard({ summary, loading, language = 'en' }: DailySummaryCardProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-40px' });
+
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 animate-pulse">
-        <div className="h-6 bg-gray-200 rounded w-48 mb-4"></div>
+      <div className="glass-card-solid rounded-3xl p-6 animate-pulse">
+        <div className="h-6 bg-surface-secondary rounded w-48 mb-4" />
         <div className="space-y-3">
-          <div className="h-16 bg-gray-100 rounded-xl"></div>
-          <div className="h-16 bg-gray-100 rounded-xl"></div>
-          <div className="h-16 bg-gray-100 rounded-xl"></div>
+          {[0, 1, 2].map((i) => <div key={i} className="h-16 bg-surface-secondary rounded-2xl" />)}
         </div>
       </div>
     );
@@ -36,65 +38,63 @@ export default function DailySummaryCard({ summary, loading, language = 'en' }: 
   const timeBlocks = [
     {
       label: t('morning', language),
-      icon: <Sun className="text-amber-400" size={22} />,
+      icon: <Sun className="text-amber-400" size={20} />,
       advice: summary.morning_advice,
       time: '6 AM – 12 PM',
-      bg: 'bg-amber-50 border-amber-100',
+      bg: 'bg-amber-500/5 border-amber-500/10',
     },
     {
       label: t('afternoon', language),
-      icon: <Sunset className="text-orange-400" size={22} />,
+      icon: <Sunset className="text-orange-400" size={20} />,
       advice: summary.afternoon_advice,
       time: '12 PM – 6 PM',
-      bg: 'bg-orange-50 border-orange-100',
+      bg: 'bg-orange-500/5 border-orange-500/10',
     },
     {
       label: t('evening', language),
-      icon: <Moon className="text-indigo-400" size={22} />,
+      icon: <Moon className="text-indigo-400" size={20} />,
       advice: summary.evening_advice,
       time: '6 PM – 10 PM',
-      bg: 'bg-indigo-50 border-indigo-100',
+      bg: 'bg-indigo-500/5 border-indigo-500/10',
     },
   ];
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+    <div ref={ref} className="glass-card-solid rounded-3xl p-6">
       <div className="mb-5">
-        <h2 className="text-lg font-semibold text-gray-800">{t('dailySafetyGuide', language)}</h2>
-        <p className="text-sm text-gray-500">{summary.location} — {summary.date}</p>
+        <h2 className="text-lg font-semibold text-content-primary">{t('dailySafetyGuide', language)}</h2>
+        <p className="text-sm text-content-secondary">{summary.location} — {summary.date}</p>
       </div>
 
       <div className="space-y-3">
-        {timeBlocks.map((block) => (
-          <div
+        {timeBlocks.map((block, idx) => (
+          <motion.div
             key={block.label}
-            className={`rounded-xl border p-4 ${block.bg}`}
+            initial={{ opacity: 0, x: -20 }}
+            animate={isInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.1 + idx * 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className={`rounded-2xl border p-4 ${block.bg}`}
           >
             <div className="flex items-center gap-3 mb-2">
               {block.icon}
               <div>
-                <span className="font-semibold text-gray-800">{block.label}</span>
-                <span className="text-xs text-gray-500 ml-2">{block.time}</span>
+                <span className="font-semibold text-content-primary text-sm">{block.label}</span>
+                <span className="text-xs text-content-secondary ml-2">{block.time}</span>
               </div>
             </div>
-            <p className="text-sm text-gray-700 leading-relaxed pl-9">
-              {block.advice}
-            </p>
-          </div>
+            <p className="text-sm text-content-secondary leading-relaxed pl-9">{block.advice}</p>
+          </motion.div>
         ))}
       </div>
 
-      {/* Early Warnings */}
       {summary.forecast && summary.forecast.early_warnings?.length > 0 && (
-        <div className="mt-5 pt-4 border-t border-gray-100">
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+        <div className="mt-5 pt-4 border-t border-white/5">
+          <h3 className="text-micro uppercase tracking-wider text-content-secondary mb-3">
             🔮 {t('forecastAlerts', language)}
           </h3>
           <div className="space-y-2">
             {summary.forecast.early_warnings.map((warning, idx) => (
-              <p key={idx} className="text-sm text-gray-600">
-                {warning}
-              </p>
+              <p key={idx} className="text-sm text-content-secondary">{warning}</p>
             ))}
           </div>
         </div>

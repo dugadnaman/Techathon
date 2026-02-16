@@ -1,98 +1,151 @@
 'use client';
 
 /**
- * PrithviAI — Data Confidence Badge
- * Minimal, non-intrusive indicator showing data freshness and confidence level.
- * Expandable on click/hover to show reasons.
+ * Prithvi — Data Confidence Badge
+ * Premium expandable badge showing data quality, freshness, and confidence.
  */
 
 import { useState } from 'react';
-import { Info, ChevronDown, ChevronUp } from 'lucide-react';
-import type { DataQuality, ConfidenceLevel, FreshnessLabel } from '@/types';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Info, ChevronDown, CheckCircle, AlertTriangle, AlertCircle } from 'lucide-react';
+import type { DataQuality, ConfidenceLevel } from '@/types';
 
 interface DataConfidenceBadgeProps {
   dataQuality?: DataQuality | null;
-  compact?: boolean; // Minimal mode for tight spaces
+  compact?: boolean;
 }
 
-const confidenceConfig: Record<ConfidenceLevel, { color: string; bg: string; border: string; dot: string; label: string }> = {
-  HIGH:   { color: 'text-green-700',  bg: 'bg-green-50',  border: 'border-green-200', dot: 'bg-green-500', label: 'High confidence' },
-  MEDIUM: { color: 'text-amber-700',  bg: 'bg-amber-50',  border: 'border-amber-200', dot: 'bg-amber-500', label: 'Medium confidence' },
-  LOW:    { color: 'text-red-700',    bg: 'bg-red-50',    border: 'border-red-200',   dot: 'bg-red-500',   label: 'Low confidence' },
+const levelConfig: Record<ConfidenceLevel, {
+  icon: typeof CheckCircle;
+  label: string;
+  dotClass: string;
+  bgClass: string;
+  textClass: string;
+  borderClass: string;
+}> = {
+  HIGH: {
+    icon: CheckCircle,
+    label: 'High Confidence',
+    dotClass: 'bg-risk-low',
+    bgClass: 'bg-risk-low/10',
+    textClass: 'text-risk-low',
+    borderClass: 'border-risk-low/20',
+  },
+  MEDIUM: {
+    icon: AlertTriangle,
+    label: 'Medium Confidence',
+    dotClass: 'bg-risk-moderate',
+    bgClass: 'bg-risk-moderate/10',
+    textClass: 'text-risk-moderate',
+    borderClass: 'border-risk-moderate/20',
+  },
+  LOW: {
+    icon: AlertCircle,
+    label: 'Low Confidence',
+    dotClass: 'bg-risk-high',
+    bgClass: 'bg-risk-high/10',
+    textClass: 'text-risk-high',
+    borderClass: 'border-risk-high/20',
+  },
 };
-
-function freshnessText(minutes: number): string {
-  if (minutes <= 1) return 'Just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  return `${hours}h ${minutes % 60}m ago`;
-}
 
 export default function DataConfidenceBadge({ dataQuality, compact = false }: DataConfidenceBadgeProps) {
   const [expanded, setExpanded] = useState(false);
 
   if (!dataQuality) return null;
 
-  const { freshness, confidence } = dataQuality;
+  const { freshness, confidence, sources } = dataQuality;
   const level = confidence.confidence_level as ConfidenceLevel;
-  const config = confidenceConfig[level] || confidenceConfig.MEDIUM;
+  const config = levelConfig[level] || levelConfig.HIGH;
+  const Icon = config.icon;
+
+  const freshnessText = freshness.freshness_minutes < 1
+    ? 'Just now'
+    : freshness.freshness_minutes < 60
+    ? `Updated ${Math.round(freshness.freshness_minutes)}m ago`
+    : `Updated ${Math.floor(freshness.freshness_minutes / 60)}h ago`;
 
   if (compact) {
     return (
-      <span
-        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${config.bg} ${config.color} ${config.border} border`}
-        title={`${config.label} · Updated ${freshnessText(freshness.freshness_minutes)}\n${confidence.confidence_reasons.join('; ')}`}
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs
+        ${config.bgClass} ${config.textClass} border ${config.borderClass}`}
       >
-        <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
-        {config.label.split(' ')[0]}
+        <span className={`w-1.5 h-1.5 rounded-full ${config.dotClass}`} />
+        <span className="font-medium">{config.label}</span>
       </span>
     );
   }
 
   return (
-    <div className={`rounded-xl border ${config.border} ${config.bg} overflow-hidden transition-all`}>
+    <motion.div
+      layout
+      className={`rounded-2xl border ${config.borderClass} ${config.bgClass} overflow-hidden`}
+    >
       <button
         onClick={() => setExpanded(!expanded)}
-        className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-left ${config.color}`}
+        className="w-full flex items-center justify-between px-4 py-2.5 text-left"
       >
-        <div className="flex items-center gap-2 min-w-0">
-          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${config.dot}`} />
-          <span className="text-xs font-medium truncate">{config.label}</span>
-          <span className="text-[10px] opacity-70">·</span>
-          <span className="text-[10px] opacity-70">Updated {freshnessText(freshness.freshness_minutes)}</span>
+        <div className="flex items-center gap-2.5">
+          <Icon size={15} className={config.textClass} />
+          <span className={`text-sm font-medium ${config.textClass}`}>
+            {config.label}
+          </span>
+          <span className="text-xs text-content-secondary">
+            · {freshnessText}
+          </span>
         </div>
-        <div className="flex-shrink-0">
-          {expanded ? <ChevronUp size={12} /> : <Info size={12} />}
-        </div>
+        <motion.div
+          animate={{ rotate: expanded ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <ChevronDown size={14} className="text-content-secondary" />
+        </motion.div>
       </button>
 
-      {expanded && (
-        <div className={`px-3 pb-2.5 pt-0 border-t ${config.border}`}>
-          <ul className="space-y-0.5 mt-1.5">
-            {confidence.confidence_reasons.map((reason, i) => (
-              <li key={i} className="text-[11px] text-gray-600 flex items-start gap-1.5">
-                <span className="mt-1 w-1 h-1 rounded-full bg-gray-400 flex-shrink-0" />
-                {reason}
-              </li>
-            ))}
-          </ul>
-          {dataQuality.sources && Object.keys(dataQuality.sources).length > 0 && (
-            <div className="mt-2 pt-1.5 border-t border-gray-200/50">
-              <p className="text-[10px] text-gray-400 mb-0.5">Data sources</p>
-              <div className="flex flex-wrap gap-1">
-                {Object.entries(dataQuality.sources).map(([key, source]) => (
-                  <span
-                    key={key}
-                    className="text-[10px] px-1.5 py-0.5 rounded bg-white/70 text-gray-500 border border-gray-200"
-                  >
-                    {key}: {source}
-                  </span>
-                ))}
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-3 pt-1 space-y-2 border-t border-white/5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-content-secondary">Score</span>
+                <span className={`font-semibold ${config.textClass}`}>
+                  {confidence.confidence_score}/100
+                </span>
               </div>
+
+              {confidence.confidence_reasons.length > 0 && (
+                <div className="space-y-1">
+                  {confidence.confidence_reasons.map((reason, i) => (
+                    <div key={i} className="flex items-start gap-1.5 text-xs text-content-secondary">
+                      <Info size={11} className="mt-0.5 flex-shrink-0 opacity-50" />
+                      <span>{reason}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {sources && Object.keys(sources).length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {Object.entries(sources).map(([key, val]) => (
+                    <span
+                      key={key}
+                      className="px-2 py-0.5 rounded-full text-[10px] bg-surface-secondary text-content-secondary"
+                    >
+                      {key}: {val}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      )}
-    </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

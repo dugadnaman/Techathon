@@ -4,58 +4,159 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+/* ─── Light Mode (default) ─── */
 :root {
-  --foreground-rgb: 15, 23, 42;
-  --background-start-rgb: 248, 250, 252;
-  --background-end-rgb: 241, 245, 249;
+  --bg-primary: #F8FAFC;
+  --bg-secondary: #E2E8F0;
+  --card-bg: #FFFFFF;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --accent-primary: #0D9488;
+  --accent-dark: #0F766E;
+  --risk-low: #22C55E;
+  --risk-moderate: #F59E0B;
+  --risk-high: #EF4444;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --shadow-color: rgba(0, 0, 0, 0.06);
+  --scrollbar-track: #f1f5f9;
+  --scrollbar-thumb: #cbd5e1;
+  --gradient-hero: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 50%, #f0f9ff 100%);
+}
+
+/* ─── Dark Mode ─── */
+.dark {
+  --bg-primary: #0F172A;
+  --bg-secondary: #1E293B;
+  --card-bg: #111827;
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --accent-primary: #14B8A6;
+  --accent-dark: #0D9488;
+  --risk-low: #22C55E;
+  --risk-moderate: #F59E0B;
+  --risk-high: #EF4444;
+  --glass-bg: rgba(17, 24, 39, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --scrollbar-track: #1e293b;
+  --scrollbar-thumb: #475569;
+  --gradient-hero: linear-gradient(135deg, #0f172a 0%, #0c1423 50%, #0f172a 100%);
+}
+
+/* ─── Base Styles ─── */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: auto; /* Lenis handles smooth scroll */
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-    to bottom,
-    rgb(var(--background-start-rgb)),
-    rgb(var(--background-end-rgb))
-  );
-  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom scrollbar */
+/* ─── Custom Scrollbar ─── */
 ::-webkit-scrollbar {
   width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #94a3b8;
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: var(--text-secondary);
 }
 
-/* Smooth transitions for all interactive elements */
-button, a, input {
-  transition: all 0.2s ease;
+/* ─── Interactive Elements ─── */
+button, a, input, select {
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Gradient text helper */
+/* ─── Utility Classes ─── */
 .gradient-text {
-  background: linear-gradient(135deg, #16a34a 0%, #059669 50%, #0d9488 100%);
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-dark) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Glass card effect */
 .glass-card {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-card-solid {
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+}
+
+/* ─── Risk Gradients ─── */
+.risk-gradient-low {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(20, 184, 166, 0.05) 100%);
+}
+
+.risk-gradient-moderate {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(234, 179, 8, 0.05) 100%);
+}
+
+.risk-gradient-high {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.05) 100%);
+}
+
+.dark .risk-gradient-low {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(20, 184, 166, 0.06) 100%);
+}
+
+.dark .risk-gradient-moderate {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(234, 179, 8, 0.06) 100%);
+}
+
+.dark .risk-gradient-high {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(220, 38, 38, 0.06) 100%);
+}
+
+/* ─── Section Spacing ─── */
+.section-padding {
+  padding: 6rem 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .section-padding {
+    padding: 8rem 2rem;
+  }
+}
+
+/* ─── Leaflet Overrides for Theme ─── */
+.dark .leaflet-container {
+  background: #1e293b;
+}
+
+.dark .leaflet-tile-pane {
+  filter: brightness(0.8) contrast(1.1) saturate(0.8);
+}
+
+/* ─── Chart Theme Overrides ─── */
+.dark .recharts-text {
+  fill: #94a3b8 !important;
+}
+
+.dark .recharts-cartesian-grid line {
+  stroke: #1e293b !important;
 }
 
 /* Pulse animation for alerts */

@@ -1,42 +1,54 @@
 'use client';
 
 /**
- * PrithviAI — Risk Factor Card
- * Individual risk factor display with icon, score, and details.
+ * Prithvi — Risk Factor Card
+ * Premium risk card with score bar, motion, and theme support.
  */
 
+import { motion, useInView } from 'framer-motion';
+import { useRef } from 'react';
 import type { RiskFactor } from '@/types';
-import { getRiskColor, getRiskBgColor, getRiskBadgeBg } from '@/lib/utils';
+import { getRiskColor } from '@/lib/utils';
 
 interface RiskCardProps {
   risk: RiskFactor;
   expanded?: boolean;
+  index?: number;
 }
 
-export default function RiskCard({ risk, expanded = false }: RiskCardProps) {
+export default function RiskCard({ risk, expanded = false, index = 0 }: RiskCardProps) {
   const { name, level, score, reason, recommendation, icon } = risk;
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-40px' });
 
-  // Map risk names to icons if emoji not present
   const riskIcons: Record<string, string> = {
-    'Air Quality': '💨',
-    'Thermal Comfort': '🌡️',
-    'Humidity': '💧',
-    'UV Exposure': '☀️',
-    'Flood / Waterlogging': '🌊',
-    'Noise Pollution': '🔊',
+    'Air Quality': '💨', 'Thermal Comfort': '🌡️', 'Humidity': '💧',
+    'UV Exposure': '☀️', 'Flood / Waterlogging': '🌊', 'Noise Pollution': '🔊',
   };
-
   const displayIcon = icon || riskIcons[name] || '📊';
 
+  const riskBg = level === 'HIGH' ? 'bg-risk-high/5 border-risk-high/15'
+    : level === 'MODERATE' ? 'bg-risk-moderate/5 border-risk-moderate/15'
+    : 'bg-risk-low/5 border-risk-low/15';
+
+  const barColor = level === 'HIGH' ? 'bg-risk-high'
+    : level === 'MODERATE' ? 'bg-risk-moderate'
+    : 'bg-risk-low';
+
   return (
-    <div className={`rounded-xl border p-4 transition-all hover:shadow-md ${getRiskBgColor(level)}`}>
-      {/* Header */}
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={isInView ? { opacity: 1, scale: 1 } : {}}
+      transition={{ duration: 0.5, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+      className={`rounded-2xl border p-5 transition-shadow hover:shadow-elevated ${riskBg}`}
+    >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <span className="text-2xl">{displayIcon}</span>
           <div>
-            <h3 className="font-semibold text-gray-800">{name}</h3>
-            <span className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full text-white mt-1 ${getRiskBadgeBg(level)}`}>
+            <h3 className="font-semibold text-content-primary">{name}</h3>
+            <span className={`inline-block text-xs font-bold px-2.5 py-0.5 rounded-full text-white mt-1 ${barColor}`}>
               {level}
             </span>
           </div>
@@ -45,33 +57,29 @@ export default function RiskCard({ risk, expanded = false }: RiskCardProps) {
           <span className={`text-2xl font-bold ${getRiskColor(level)}`}>
             {Math.round(score)}
           </span>
-          <span className="text-xs text-gray-400 block">/100</span>
+          <span className="text-xs text-content-secondary block">/100</span>
         </div>
       </div>
 
-      {/* Progress bar */}
-      <div className="w-full bg-white/60 rounded-full h-2 mb-3">
-        <div
-          className={`h-2 rounded-full transition-all duration-700 ${
-            level === 'HIGH' ? 'bg-red-500' :
-            level === 'MODERATE' ? 'bg-amber-500' :
-            'bg-green-500'
-          }`}
-          style={{ width: `${Math.min(score, 100)}%` }}
+      {/* Score bar */}
+      <div className="w-full bg-surface-secondary rounded-full h-1.5 mb-3 overflow-hidden">
+        <motion.div
+          className={`h-1.5 rounded-full ${barColor}`}
+          initial={{ width: 0 }}
+          animate={isInView ? { width: `${Math.min(score, 100)}%` } : { width: 0 }}
+          transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
         />
       </div>
 
-      {/* Reason */}
-      <p className="text-sm text-gray-600 mb-2">{reason}</p>
+      <p className="text-sm text-content-secondary mb-2">{reason}</p>
 
-      {/* Recommendation (shown if expanded or always for high risk) */}
       {(expanded || level === 'HIGH') && (
-        <div className="mt-3 pt-3 border-t border-gray-200/50">
-          <p className="text-sm font-medium text-gray-700">
+        <div className="mt-3 pt-3 border-t border-white/10">
+          <p className="text-sm text-content-secondary">
             💡 {recommendation}
           </p>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

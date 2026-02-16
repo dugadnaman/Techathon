@@ -1,16 +1,18 @@
 'use client';
 
 /**
- * PrithviAI — Map Chat Box Component
- * AI Q&A interface that uses the selected map location as context.
- * Maintains conversation history to provide non-repetitive, varied responses.
+ * Prithvi — Map Chat Box Component
+ * Premium glass-styled AI Q&A for map locations.
  */
 
 import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Send, MapPin, Sparkles, RotateCcw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { sendMapChatMessage } from '@/lib/api';
 import type { MapChatMessage } from '@/types';
+
+const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 interface MapChatBoxProps {
   selectedLocation: { lat: number; lon: number; name: string } | null;
@@ -33,12 +35,10 @@ export default function MapChatBox({ selectedLocation }: MapChatBoxProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Clear messages when location changes
   useEffect(() => {
     if (selectedLocation) {
       setMessages([]);
@@ -61,7 +61,6 @@ export default function MapChatBox({ selectedLocation }: MapChatBoxProps) {
     setIsLoading(true);
 
     try {
-      // Build conversation history for non-repetitive answers
       const history = messages.map((m) => ({
         role: m.role,
         content: m.content,
@@ -110,13 +109,12 @@ export default function MapChatBox({ selectedLocation }: MapChatBoxProps) {
     setSessionId(undefined);
   };
 
-  // No location selected state
   if (!selectedLocation) {
     return (
       <div className="h-full flex items-center justify-center p-6">
         <div className="text-center">
-          <MapPin className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-sm text-gray-400">Select a location on the map to start asking questions</p>
+          <MapPin className="w-10 h-10 text-content-secondary/30 mx-auto mb-3" />
+          <p className="text-sm text-content-secondary">Select a location on the map to start asking questions</p>
         </div>
       </div>
     );
@@ -125,12 +123,12 @@ export default function MapChatBox({ selectedLocation }: MapChatBoxProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Chat Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-green-50 to-emerald-50">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-surface-secondary bg-accent/5">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-green-600" />
+          <Sparkles className="w-4 h-4 text-accent" />
           <div>
-            <h3 className="text-sm font-semibold text-gray-800">AI Assistant</h3>
-            <p className="text-xs text-gray-500 truncate max-w-[200px]">
+            <h3 className="text-sm font-semibold text-content-primary">AI Assistant</h3>
+            <p className="text-xs text-content-secondary truncate max-w-[200px]">
               {selectedLocation.name || `${selectedLocation.lat.toFixed(3)}, ${selectedLocation.lon.toFixed(3)}`}
             </p>
           </div>
@@ -138,7 +136,7 @@ export default function MapChatBox({ selectedLocation }: MapChatBoxProps) {
         {messages.length > 0 && (
           <button
             onClick={handleReset}
-            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-1.5 text-content-secondary hover:text-content-primary hover:bg-surface-secondary rounded-lg transition-colors"
             title="Clear conversation"
           >
             <RotateCcw size={14} />
@@ -148,59 +146,73 @@ export default function MapChatBox({ selectedLocation }: MapChatBoxProps) {
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {messages.length === 0 ? (
-          <div className="space-y-3">
-            <p className="text-xs text-gray-500 text-center mb-3">
-              Ask anything about environmental conditions at <strong>{selectedLocation.name || 'this location'}</strong>
-            </p>
-            <div className="space-y-2">
-              {SUGGESTED_QUESTIONS.slice(0, 4).map((q, i) => (
-                <button
-                  key={i}
-                  onClick={() => sendMessage(q)}
-                  className="w-full text-left text-xs px-3 py-2.5 bg-gray-50 hover:bg-green-50 hover:text-green-700 border border-gray-100 hover:border-green-200 rounded-xl transition-all"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+        <AnimatePresence initial={false}>
+          {messages.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-3"
             >
-              <div
-                className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                  msg.role === 'user'
-                    ? 'bg-green-600 text-white rounded-tr-md'
-                    : 'bg-gray-100 text-gray-800 rounded-tl-md'
-                }`}
+              <p className="text-xs text-content-secondary text-center mb-3">
+                Ask anything about environmental conditions at <strong className="text-content-primary">{selectedLocation.name || 'this location'}</strong>
+              </p>
+              <div className="space-y-2">
+                {SUGGESTED_QUESTIONS.slice(0, 4).map((q, i) => (
+                  <motion.button
+                    key={i}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    onClick={() => sendMessage(q)}
+                    className="w-full text-left text-xs px-3 py-2.5 bg-surface-secondary/50 hover:bg-accent/5 hover:text-accent border border-surface-secondary hover:border-accent/20 rounded-2xl transition-all text-content-secondary"
+                  >
+                    {q}
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          ) : (
+            messages.map((msg) => (
+              <motion.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.3, ease: EASE_OUT }}
+                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                {msg.role === 'assistant' ? (
-                  <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 prose-headings:my-1 prose-strong:text-gray-900">
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
-                  </div>
-                ) : (
-                  msg.content
-                )}
-              </div>
-            </div>
-          ))
-        )}
+                <div
+                  className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                    msg.role === 'user'
+                      ? 'bg-accent text-white rounded-tr-md'
+                      : 'bg-surface-secondary text-content-primary rounded-tl-md'
+                  }`}
+                >
+                  {msg.role === 'assistant' ? (
+                    <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 prose-headings:my-1 dark:prose-invert">
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    msg.content
+                  )}
+                </div>
+              </motion.div>
+            ))
+          )}
+        </AnimatePresence>
 
-        {/* Loading indicator */}
         {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-gray-100 px-4 py-3 rounded-2xl rounded-tl-md">
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex justify-start"
+          >
+            <div className="bg-surface-secondary px-4 py-3 rounded-2xl rounded-tl-md">
               <div className="flex gap-1.5">
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <span className="w-2 h-2 bg-content-secondary/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-2 h-2 bg-content-secondary/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-2 h-2 bg-content-secondary/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         <div ref={messagesEndRef} />
@@ -209,7 +221,7 @@ export default function MapChatBox({ selectedLocation }: MapChatBoxProps) {
       {/* Input Area */}
       <form
         onSubmit={handleSubmit}
-        className="p-3 border-t bg-white"
+        className="p-3 border-t border-surface-secondary bg-surface-secondary/30"
       >
         <div className="flex items-center gap-2">
           <input
@@ -218,16 +230,18 @@ export default function MapChatBox({ selectedLocation }: MapChatBoxProps) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about this location..."
-            className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent placeholder:text-gray-400"
+            className="flex-1 px-4 py-2.5 bg-surface-card border border-surface-secondary rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40 text-content-primary placeholder:text-content-secondary"
             disabled={isLoading}
           />
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="p-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            className="p-2.5 bg-accent text-white rounded-2xl hover:bg-accent-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             <Send size={16} />
-          </button>
+          </motion.button>
         </div>
       </form>
     </div>

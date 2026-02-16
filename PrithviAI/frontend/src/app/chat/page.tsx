@@ -1,16 +1,19 @@
 'use client';
 
 /**
- * PrithviAI — AI Chat Page
- * Full-page chat interface for natural language environmental queries.
+ * Prithvi — AI Chat Page
+ * Premium full-page chat interface with glass styling.
  */
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import ChatInterface from '@/components/ChatInterface';
 import type { Language, AgeGroup } from '@/types';
 import { MapPin, UserCircle } from 'lucide-react';
 import { t } from '@/lib/translations';
+
+const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 export default function ChatPage() {
   const [language, setLanguage] = useState<Language>('en');
@@ -23,13 +26,18 @@ export default function ChatPage() {
 
       <main className="pt-20 pb-6 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
         {/* Controls */}
-        <div className="flex flex-wrap items-center gap-3 mb-4">
-          <div className="flex items-center gap-2 bg-white rounded-xl px-3 py-1.5 border border-gray-200 shadow-sm">
-            <MapPin size={14} className="text-green-600" />
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EASE_OUT }}
+          className="flex flex-wrap items-center gap-3 mb-4"
+        >
+          <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-3 py-2">
+            <MapPin size={14} className="text-accent" />
             <select
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="text-sm text-gray-700 bg-transparent outline-none cursor-pointer"
+              className="text-sm text-content-primary bg-transparent outline-none cursor-pointer"
             >
               <option value="Pune">Pune</option>
               <option value="Mumbai">Mumbai</option>
@@ -39,21 +47,27 @@ export default function ChatPage() {
             </select>
           </div>
 
-          <div className="flex items-center gap-2 bg-white rounded-xl px-3 py-1.5 border border-gray-200 shadow-sm">
-            <UserCircle size={14} className="text-green-600" />
+          <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-3 py-2">
+            <UserCircle size={14} className="text-accent" />
             <select
               value={ageGroup}
               onChange={(e) => setAgeGroup(e.target.value as AgeGroup)}
-              className="text-sm text-gray-700 bg-transparent outline-none cursor-pointer"
+              className="text-sm text-content-primary bg-transparent outline-none cursor-pointer"
             >
               <option value="elderly">{t('seniorCitizen', language)}</option>
               <option value="adult">{t('adult', language)}</option>
             </select>
           </div>
-        </div>
+        </motion.div>
 
         {/* Chat Interface */}
-        <ChatInterface language={language} ageGroup={ageGroup} city={city} />
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: EASE_OUT }}
+        >
+          <ChatInterface language={language} ageGroup={ageGroup} city={city} />
+        </motion.div>
       </main>
     </>
   );

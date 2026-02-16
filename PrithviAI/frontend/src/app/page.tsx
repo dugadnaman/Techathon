@@ -1,11 +1,12 @@
 'use client';
 
 /**
- * PrithviAI — Home Page
- * Main citizen-facing view with Safety Index, alerts, environment data, and daily summary.
+ * Prithvi — Home Page
+ * Premium scroll-narrative experience with motion-driven sections.
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import SafetyIndexDisplay from '@/components/SafetyIndex';
 import RiskCard from '@/components/RiskCard';
@@ -13,10 +14,13 @@ import AlertBanner from '@/components/AlertBanner';
 import DailySummaryCard from '@/components/DailySummary';
 import EnvironmentSnapshot from '@/components/EnvironmentSnapshot';
 import ForecastChart from '@/components/ForecastChart';
+import { RevealSection, StaggerContainer, StaggerItem, FadeIn } from '@/components/motion';
 import { assessRisk, getAlerts, getDailySummary, getCurrentEnvironment } from '@/lib/api';
 import type { SafetyIndex, HealthAlert, DailySummary, EnvironmentData, Language, AgeGroup, ActivityIntent } from '@/types';
-import { Shield, MapPin, UserCircle, Activity, LocateFixed, Loader2 } from 'lucide-react';
+import { Shield, MapPin, UserCircle, Activity, LocateFixed, Loader2, ChevronDown } from 'lucide-react';
 import { t } from '@/lib/translations';
+
+const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 // Accurate coordinates for each city
 const CITY_COORDS: Record<string, { lat: number; lon: number }> = {
@@ -60,9 +64,7 @@ export default function HomePage() {
   const [activity, setActivity] = useState<ActivityIntent>('walking');
   const [city, setCity] = useState('Pune');
 
-  // Custom coordinates when using detected location outside preset cities
   const [customCoords, setCustomCoords] = useState<{ lat: number; lon: number; label: string } | null>(null);
-  // Precise locality text shown after detection (e.g. "Koregaon Park, Pune")
   const [detectedLocality, setDetectedLocality] = useState<string | null>(null);
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [locationDetected, setLocationDetected] = useState(false);
@@ -88,8 +90,6 @@ export default function HomePage() {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
-
-        // Always reverse-geocode to get the precise locality name
         let locality = '';
         let areaName = '';
         let cityName = '';
@@ -107,7 +107,6 @@ export default function HomePage() {
           }
         } catch { /* fallback below */ }
 
-        // Try Nominatim for more granular area name (suburb/neighbourhood)
         try {
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=16&addressdetails=1`,
@@ -122,7 +121,6 @@ export default function HomePage() {
           }
         } catch { /* use OWM data */ }
 
-        // Build a precise locality string like "Koregaon Park, Pune" or "Andheri, Mumbai"
         if (areaName && cityName) {
           locality = `${areaName}, ${cityName}`;
         } else if (areaName) {
@@ -139,11 +137,9 @@ export default function HomePage() {
 
         const nearest = findNearestCity(latitude, longitude);
         if (nearest) {
-          // User is near a supported city — use it for API requests
           setCity(nearest);
           setCustomCoords(null);
         } else {
-          // User is far from preset cities — use exact coords
           setCustomCoords({ lat: latitude, lon: longitude, label: cityName || locality });
           setCity('__custom__');
         }
@@ -151,14 +147,12 @@ export default function HomePage() {
         setDetectingLocation(false);
       },
       () => {
-        // Permission denied or error — keep Pune default
         setDetectingLocation(false);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
     );
   }, []);
 
-  // Auto-detect location on first mount
   useEffect(() => {
     if (!geoInitDone.current) {
       geoInitDone.current = true;
@@ -173,7 +167,6 @@ export default function HomePage() {
   async function loadData() {
     setLoading(true);
     setError(null);
-
     const cityName = displayCity;
     try {
       const [riskResult, alertResult, summaryResult, envResult] = await Promise.allSettled([
@@ -182,17 +175,14 @@ export default function HomePage() {
         getDailySummary(coords.lat, coords.lon, cityName, ageGroup),
         getCurrentEnvironment(coords.lat, coords.lon, cityName),
       ]);
-
       if (riskResult.status === 'fulfilled') setSafetyIndex(riskResult.value);
       if (alertResult.status === 'fulfilled') setAlerts(alertResult.value);
       if (summaryResult.status === 'fulfilled') setDailySummary(summaryResult.value);
       if (envResult.status === 'fulfilled') setEnvData(envResult.value);
-
-      // If all failed, show error
       if ([riskResult, alertResult, summaryResult, envResult].every(r => r.status === 'rejected')) {
-        setError('Unable to connect to backend. Please ensure the server is running on port 8000.');
+        setError('Unable to connect to backend. Please ensure the server is running.');
       }
-    } catch (e) {
+    } catch {
       setError('Failed to load data. Please check your connection.');
     } finally {
       setLoading(false);
@@ -203,175 +193,248 @@ export default function HomePage() {
     <>
       <Navbar language={language} onLanguageChange={setLanguage} />
 
-      <main className="pt-20 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        {/* Hero Section */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            <span className="gradient-text">Prithvi</span>
-          </h1>
-          <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-            {t('tagline', language)}
-          </p>
+      {/* ═══════════════ HERO SECTION ═══════════════ */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-4 pt-20 overflow-hidden">
+        {/* Subtle background gradient orbs */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/4 -left-32 w-96 h-96 rounded-full bg-accent/5 blur-3xl" />
+          <div className="absolute bottom-1/4 -right-32 w-96 h-96 rounded-full bg-risk-moderate/5 blur-3xl" />
         </div>
 
-        {/* User Controls */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-          <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2 border border-gray-200 shadow-sm">
-            <MapPin size={16} className="text-green-600" />
-            <select
-              value={city}
-              onChange={(e) => {
-                setCity(e.target.value);
-                if (e.target.value !== '__custom__') setCustomCoords(null);
-              }}
-              className="text-sm text-gray-700 bg-transparent outline-none cursor-pointer"
-            >
-              {customCoords && (
-                <option value="__custom__">📍 {customCoords.label}</option>
-              )}
-              <option value="Pune">Pune</option>
-              <option value="Mumbai">Mumbai</option>
-              <option value="Delhi">Delhi</option>
-              <option value="Bangalore">Bangalore</option>
-              <option value="Chennai">Chennai</option>
-              <option value="Kolkata">Kolkata</option>
-              <option value="Hyderabad">Hyderabad</option>
-            </select>
-          </div>
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: EASE_OUT }}
+          className="text-center relative z-10 max-w-3xl mx-auto"
+        >
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1, ease: EASE_OUT }}
+            className="text-label uppercase tracking-[0.2em] text-accent mb-6 font-medium"
+          >
+            Environmental Intelligence
+          </motion.p>
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2, ease: EASE_OUT }}
+            className="text-hero-lg md:text-hero-xl font-bold text-content-primary mb-6 leading-[1.1]"
+          >
+            <span className="gradient-text">Prithvi</span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.35, ease: EASE_OUT }}
+            className="text-body-lg text-content-secondary max-w-xl mx-auto mb-10"
+          >
+            {t('tagline', language)}
+          </motion.p>
 
-          {/* Detect Location Button */}
-          <button
-            onClick={detectLocation}
-            disabled={detectingLocation}
-            className={`flex items-center gap-1.5 px-3 py-2 text-sm rounded-xl border shadow-sm transition-colors ${
-              locationDetected
-                ? 'bg-green-50 border-green-300 text-green-700'
-                : 'bg-white border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-600'
-            } ${detectingLocation ? 'opacity-60 cursor-wait' : 'cursor-pointer'}`}
-            title="Detect my location"
+          {/* Location pill */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.5, ease: EASE_OUT }}
+            className="inline-flex items-center gap-2 glass-card rounded-full px-5 py-2.5 mb-4"
           >
             {detectingLocation ? (
-              <Loader2 size={15} className="animate-spin" />
+              <Loader2 size={15} className="animate-spin text-accent" />
             ) : (
-              <LocateFixed size={15} />
+              <MapPin size={15} className="text-accent" />
             )}
-            {detectingLocation ? 'Detecting...' : locationDetected ? 'Re-detect' : 'Detect Location'}
-          </button>
-
-          <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2 border border-gray-200 shadow-sm">
-            <UserCircle size={16} className="text-green-600" />
-            <select
-              value={ageGroup}
-              onChange={(e) => setAgeGroup(e.target.value as AgeGroup)}
-              className="text-sm text-gray-700 bg-transparent outline-none cursor-pointer"
-            >
-              <option value="elderly">{t('seniorCitizen', language)}</option>
-              <option value="adult">{t('adult', language)}</option>
-            </select>
-          </div>
-
-          <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2 border border-gray-200 shadow-sm">
-            <Activity size={16} className="text-green-600" />
-            <select
-              value={activity}
-              onChange={(e) => setActivity(e.target.value as ActivityIntent)}
-              className="text-sm text-gray-700 bg-transparent outline-none cursor-pointer"
-            >
-              <option value="walking">{t('walking', language)}</option>
-              <option value="rest">{t('resting', language)}</option>
-              <option value="exercise">{t('exercise', language)}</option>
-              <option value="outdoor_work">{t('outdoorWork', language)}</option>
-              <option value="commute">{t('commuting', language)}</option>
-            </select>
-          </div>
-
-          <button
-            onClick={loadData}
-            className="px-4 py-2 bg-green-600 text-white text-sm rounded-xl hover:bg-green-700 shadow-sm"
-          >
-            {t('refresh', language)}
-          </button>
-        </div>
-
-        {/* Detected Location Banner */}
-        {detectedLocality && locationDetected && (
-          <div className="flex items-center justify-center gap-2 mb-6 px-4 py-2.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl max-w-lg mx-auto">
-            <MapPin size={16} className="text-green-600 flex-shrink-0" />
-            <span className="text-sm text-gray-700">
-              Your location: <span className="font-semibold text-green-800">{detectedLocality}</span>
+            <span className="text-sm text-content-secondary">
+              {detectingLocation
+                ? 'Detecting location...'
+                : detectedLocality && locationDetected
+                  ? detectedLocality
+                  : displayCity}
             </span>
-          </div>
-        )}
-        {detectingLocation && (
-          <div className="flex items-center justify-center gap-2 mb-6 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl max-w-lg mx-auto">
-            <Loader2 size={16} className="text-gray-400 animate-spin flex-shrink-0" />
-            <span className="text-sm text-gray-500">Detecting your location...</span>
-          </div>
-        )}
+          </motion.div>
+        </motion.div>
 
-        {/* Error State */}
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2, duration: 0.8 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        >
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <ChevronDown size={24} className="text-content-secondary/40" />
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* ═══════════════ CONTROLS BAR ═══════════════ */}
+      <section className="section-padding max-w-5xl mx-auto">
+        <RevealSection>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-4 py-2.5">
+              <MapPin size={16} className="text-accent" />
+              <select
+                value={city}
+                onChange={(e) => {
+                  setCity(e.target.value);
+                  if (e.target.value !== '__custom__') setCustomCoords(null);
+                }}
+                className="text-sm text-content-primary bg-transparent outline-none cursor-pointer"
+              >
+                {customCoords && (
+                  <option value="__custom__">📍 {customCoords.label}</option>
+                )}
+                <option value="Pune">Pune</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Bangalore">Bangalore</option>
+                <option value="Chennai">Chennai</option>
+                <option value="Kolkata">Kolkata</option>
+                <option value="Hyderabad">Hyderabad</option>
+              </select>
+            </div>
+
+            <button
+              onClick={detectLocation}
+              disabled={detectingLocation}
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm rounded-2xl border transition-all duration-300 ${
+                locationDetected
+                  ? 'bg-risk-low/10 border-risk-low/30 text-risk-low'
+                  : 'glass-card-solid text-content-secondary hover:border-accent/40 hover:text-accent'
+              } ${detectingLocation ? 'opacity-60 cursor-wait' : 'cursor-pointer'}`}
+              title="Detect my location"
+            >
+              {detectingLocation ? (
+                <Loader2 size={15} className="animate-spin" />
+              ) : (
+                <LocateFixed size={15} />
+              )}
+              {detectingLocation ? 'Detecting...' : locationDetected ? 'Re-detect' : 'Detect Location'}
+            </button>
+
+            <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-4 py-2.5">
+              <UserCircle size={16} className="text-accent" />
+              <select
+                value={ageGroup}
+                onChange={(e) => setAgeGroup(e.target.value as AgeGroup)}
+                className="text-sm text-content-primary bg-transparent outline-none cursor-pointer"
+              >
+                <option value="elderly">{t('seniorCitizen', language)}</option>
+                <option value="adult">{t('adult', language)}</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-4 py-2.5">
+              <Activity size={16} className="text-accent" />
+              <select
+                value={activity}
+                onChange={(e) => setActivity(e.target.value as ActivityIntent)}
+                className="text-sm text-content-primary bg-transparent outline-none cursor-pointer"
+              >
+                <option value="walking">{t('walking', language)}</option>
+                <option value="rest">{t('resting', language)}</option>
+                <option value="exercise">{t('exercise', language)}</option>
+                <option value="outdoor_work">{t('outdoorWork', language)}</option>
+                <option value="commute">{t('commuting', language)}</option>
+              </select>
+            </div>
+
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={loadData}
+              className="px-5 py-2.5 bg-accent text-white text-sm rounded-2xl font-medium shadow-glow-green transition-shadow hover:shadow-glow-green/80"
+            >
+              {t('refresh', language)}
+            </motion.button>
+          </div>
+        </RevealSection>
+      </section>
+
+      {/* ═══════════════ ERROR STATE ═══════════════ */}
+      <AnimatePresence>
         {error && (
-          <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-xl text-center">
-            <p className="text-red-700 font-medium">{error}</p>
-            <p className="text-red-500 text-sm mt-1">
-              Run: <code className="bg-red-100 px-2 py-0.5 rounded">cd backend && uvicorn main:app --reload --port 8000</code>
-            </p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            className="max-w-2xl mx-auto px-4 mb-8"
+          >
+            <div className="p-4 bg-risk-high/10 border border-risk-high/20 rounded-2xl text-center">
+              <p className="text-risk-high font-medium">{error}</p>
+            </div>
+          </motion.div>
         )}
+      </AnimatePresence>
 
-        {/* Alerts */}
-        {alerts.length > 0 && (
-          <div className="mb-8">
-            <AlertBanner alerts={alerts} />
-          </div>
-        )}
+      {/* ═══════════════ ALERTS ═══════════════ */}
+      {alerts.length > 0 && (
+        <div className="max-w-5xl mx-auto px-4 mb-8">
+          <AlertBanner alerts={alerts} />
+        </div>
+      )}
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Safety Index (Center/Top) */}
-          <div className="lg:col-span-1">
+      {/* ═══════════════ SAFETY INDEX + ENVIRONMENT ═══════════════ */}
+      <section className="section-padding max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <RevealSection className="lg:col-span-1">
             <SafetyIndexDisplay safetyIndex={safetyIndex} loading={loading} language={language} />
-          </div>
-
-          {/* Daily Summary + Environment */}
-          <div className="lg:col-span-2 space-y-6">
-            <EnvironmentSnapshot data={envData} loading={loading} language={language} />
-            <DailySummaryCard summary={dailySummary} loading={loading} language={language} />
+          </RevealSection>
+          <div className="lg:col-span-2 space-y-8">
+            <RevealSection delay={0.1}>
+              <EnvironmentSnapshot data={envData} loading={loading} language={language} />
+            </RevealSection>
+            <RevealSection delay={0.2}>
+              <DailySummaryCard summary={dailySummary} loading={loading} language={language} />
+            </RevealSection>
           </div>
         </div>
+      </section>
 
-        {/* All Risk Factors */}
-        {safetyIndex && (
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <Shield size={20} className="text-green-600" />
-              {t('detailedRiskAnalysis', language)}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {safetyIndex.all_risks.map((risk, idx) => (
-                <RiskCard key={idx} risk={risk} expanded />
-              ))}
+      {/* ═══════════════ RISK FACTORS ═══════════════ */}
+      {safetyIndex && (
+        <section className="section-padding max-w-7xl mx-auto">
+          <RevealSection>
+            <div className="flex items-center gap-3 mb-8">
+              <Shield size={22} className="text-accent" />
+              <h2 className="text-section font-bold text-content-primary">
+                {t('detailedRiskAnalysis', language)}
+              </h2>
             </div>
-          </div>
-        )}
+          </RevealSection>
+          <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {safetyIndex.all_risks.map((risk, idx) => (
+              <StaggerItem key={idx}>
+                <RiskCard risk={risk} expanded />
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        </section>
+      )}
 
-        {/* Forecast Chart */}
-        {dailySummary?.forecast && (
-          <div className="mb-8">
+      {/* ═══════════════ FORECAST ═══════════════ */}
+      {dailySummary?.forecast && (
+        <section className="section-padding max-w-5xl mx-auto">
+          <RevealSection>
             <ForecastChart points={dailySummary.forecast.points} />
-          </div>
-        )}
+          </RevealSection>
+        </section>
+      )}
 
-        {/* Footer */}
-        <footer className="text-center py-8 border-t border-gray-100 mt-12">
-          <p className="text-sm text-gray-400">
+      {/* ═══════════════ FOOTER ═══════════════ */}
+      <footer className="section-padding text-center border-t border-surface-secondary">
+        <FadeIn>
+          <p className="text-sm text-content-secondary/60">
             {t('footer', language)}
           </p>
-          <p className="text-xs text-gray-300 mt-1">
+          <p className="text-xs text-content-secondary/40 mt-2">
             {t('disclaimer', language)}
           </p>
-        </footer>
-      </main>
+        </FadeIn>
+      </footer>
     </>
   );
 }

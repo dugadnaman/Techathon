@@ -1,15 +1,18 @@
 'use client';
 
 /**
- * PrithviAI — Navigation Bar
+ * Prithvi — Premium Navigation Bar
+ * Glassmorphic top nav with smooth animations and theme toggle.
  */
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Globe, Menu, X, Shield, MessageCircle, BarChart3, Home, Map } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Menu, X, Home, Map, MessageCircle, BarChart3 } from 'lucide-react';
 import type { Language } from '@/types';
 import { getLanguageName } from '@/lib/utils';
 import { t } from '@/lib/translations';
+import ThemeToggle from '@/components/ThemeToggle';
 
 interface NavbarProps {
   language: Language;
@@ -19,39 +22,54 @@ interface NavbarProps {
 export default function Navbar({ language, onLanguageChange }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const links = [
+    { href: '/', icon: <Home size={16} />, label: t('navHome', language) },
+    { href: '/explore', icon: <Map size={16} />, label: t('navMapExplorer', language) },
+    { href: '/chat', icon: <MessageCircle size={16} />, label: t('navAIChat', language) },
+    { href: '/dashboard', icon: <BarChart3 size={16} />, label: t('navDashboard', language) },
+  ];
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-100 shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 z-50 glass-card">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-gradient-to-br from-green-500 to-emerald-700 rounded-xl flex items-center justify-center">
-              <span className="text-white text-lg">🌍</span>
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 bg-gradient-to-br from-accent to-accent-dark rounded-xl flex items-center justify-center shadow-glow-green">
+              <span className="text-white text-base">🌍</span>
             </div>
-            <div>
-              <span className="text-xl font-bold gradient-text">Prithvi</span>
-            </div>
+            <span className="text-xl font-bold gradient-text tracking-tight">
+              Prithvi
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
-            <NavLink href="/" icon={<Home size={18} />} label={t('navHome', language)} />
-            <NavLink href="/explore" icon={<Map size={18} />} label={t('navMapExplorer', language)} />
-            <NavLink href="/chat" icon={<MessageCircle size={18} />} label={t('navAIChat', language)} />
-            <NavLink href="/dashboard" icon={<BarChart3 size={18} />} label={t('navDashboard', language)} />
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="flex items-center gap-2 px-4 py-2 text-sm text-content-secondary
+                  hover:text-accent hover:bg-accent/5 rounded-xl transition-all duration-200"
+              >
+                {link.icon}
+                {link.label}
+              </Link>
+            ))}
           </div>
 
-          {/* Right side: Language selector */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 bg-gray-50 rounded-lg p-1">
+          {/* Right Side: Language + Theme + Mobile Menu */}
+          <div className="flex items-center gap-2">
+            {/* Language Switcher */}
+            <div className="hidden sm:flex items-center gap-0.5 bg-surface-secondary rounded-xl p-1">
               {(['en', 'hi', 'mr'] as Language[]).map((lang) => (
                 <button
                   key={lang}
                   onClick={() => onLanguageChange(lang)}
-                  className={`px-3 py-1.5 text-sm rounded-md transition-all ${
+                  className={`px-2.5 py-1.5 text-xs rounded-lg transition-all ${
                     language === lang
-                      ? 'bg-white text-green-700 shadow-sm font-medium'
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'bg-surface-card text-accent shadow-sm font-semibold'
+                      : 'text-content-secondary hover:text-content-primary'
                   }`}
                 >
                   {getLanguageName(lang)}
@@ -59,10 +77,12 @@ export default function Navbar({ language, onLanguageChange }: NavbarProps) {
               ))}
             </div>
 
-            {/* Mobile menu button */}
+            <ThemeToggle />
+
+            {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100"
+              className="md:hidden p-2 rounded-xl hover:bg-surface-secondary text-content-secondary"
             >
               {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -70,40 +90,50 @@ export default function Navbar({ language, onLanguageChange }: NavbarProps) {
         </div>
       </div>
 
-      {/* Mobile menu */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-100 px-4 py-3 space-y-1">
-          <MobileNavLink href="/" icon={<Home size={18} />} label={t('navHome', language)} onClick={() => setIsMenuOpen(false)} />
-          <MobileNavLink href="/explore" icon={<Map size={18} />} label={t('navMapExplorer', language)} onClick={() => setIsMenuOpen(false)} />
-          <MobileNavLink href="/chat" icon={<MessageCircle size={18} />} label={t('navAIChat', language)} onClick={() => setIsMenuOpen(false)} />
-          <MobileNavLink href="/dashboard" icon={<BarChart3 size={18} />} label={t('navDashboard', language)} onClick={() => setIsMenuOpen(false)} />
-        </div>
-      )}
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            className="md:hidden glass-card border-t border-white/5 overflow-hidden"
+          >
+            <div className="px-4 py-3 space-y-1">
+              {links.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-content-primary
+                    hover:bg-accent/5 rounded-xl transition-colors"
+                >
+                  {link.icon}
+                  <span className="font-medium">{link.label}</span>
+                </Link>
+              ))}
+              {/* Mobile Language Switcher */}
+              <div className="flex items-center gap-1 pt-2 px-4">
+                {(['en', 'hi', 'mr'] as Language[]).map((lang) => (
+                  <button
+                    key={lang}
+                    onClick={() => onLanguageChange(lang)}
+                    className={`px-3 py-1.5 text-xs rounded-lg transition-all ${
+                      language === lang
+                        ? 'bg-accent/10 text-accent font-semibold'
+                        : 'text-content-secondary'
+                    }`}
+                  >
+                    {getLanguageName(lang)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }
 
-function NavLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
-    >
-      {icon}
-      {label}
-    </Link>
-  );
-}
-
-function MobileNavLink({ href, icon, label, onClick }: { href: string; icon: React.ReactNode; label: string; onClick: () => void }) {
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-green-50 rounded-lg"
-    >
-      {icon}
-      <span className="font-medium">{label}</span>
-    </Link>
-  );
-}

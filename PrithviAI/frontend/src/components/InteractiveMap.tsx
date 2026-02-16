@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * PrithviAI — Interactive Map Component
- * Leaflet-based map with clickable locations and landmark markers.
+ * Prithvi — Interactive Map Component
+ * Leaflet map with dark/light tile support and theme-aware styling.
  */
 
 import { useEffect, useRef, useState, useCallback } from 'react';
@@ -14,16 +14,13 @@ import type { RiskLevel } from '@/types';
 
 import 'leaflet/dist/leaflet.css';
 
-// ─── Fix Leaflet default icon issue with Next.js ────────
-
+// Fix Leaflet default icon issue with Next.js
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
-
-// ─── Custom colored marker factory ──────────────────────
 
 function createColoredIcon(color: string, isSelected = false): L.DivIcon {
   const size = isSelected ? 18 : 12;
@@ -43,8 +40,6 @@ function createColoredIcon(color: string, isSelected = false): L.DivIcon {
   });
 }
 
-// ─── Click handler component ────────────────────────────
-
 function MapClickHandler({ onMapClick }: { onMapClick: (lat: number, lon: number) => void }) {
   useMapEvents({
     click(e) {
@@ -54,8 +49,6 @@ function MapClickHandler({ onMapClick }: { onMapClick: (lat: number, lon: number
   return null;
 }
 
-// ─── Fly to selected location ───────────────────────────
-
 function FlyToLocation({ lat, lon }: { lat: number; lon: number }) {
   const map = useMap();
   useEffect(() => {
@@ -63,8 +56,6 @@ function FlyToLocation({ lat, lon }: { lat: number; lon: number }) {
   }, [lat, lon, map]);
   return null;
 }
-
-// ─── Props ──────────────────────────────────────────────
 
 interface InteractiveMapProps {
   landmarks: Landmark[];
@@ -82,6 +73,16 @@ export default function InteractiveMap({
   isLoading = false,
 }: InteractiveMapProps) {
   const [clickedPos, setClickedPos] = useState<{ lat: number; lon: number } | null>(null);
+  const [isDark, setIsDark] = useState(false);
+
+  // Detect dark mode
+  useEffect(() => {
+    const checkDark = () => setIsDark(document.documentElement.classList.contains('dark'));
+    checkDark();
+    const observer = new MutationObserver(checkDark);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   const handleMapClick = useCallback(
     (lat: number, lon: number) => {
@@ -99,19 +100,22 @@ export default function InteractiveMap({
     [onLocationSelect],
   );
 
+  const tileUrl = isDark
+    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+
   return (
-    <div className="relative w-full h-full rounded-2xl overflow-hidden border border-gray-200 shadow-lg">
+    <div className="relative w-full h-full rounded-3xl overflow-hidden border border-surface-secondary shadow-elevated">
       {/* Loading overlay */}
       {isLoading && (
-        <div className="absolute inset-0 z-[1000] bg-white/60 backdrop-blur-sm flex items-center justify-center">
-          <div className="flex items-center gap-3 bg-white px-5 py-3 rounded-xl shadow-md">
-            <div className="w-5 h-5 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm text-gray-600 font-medium">Loading location data...</span>
+        <div className="absolute inset-0 z-[1000] bg-surface-primary/60 backdrop-blur-sm flex items-center justify-center">
+          <div className="flex items-center gap-3 glass-card-solid px-5 py-3 rounded-2xl shadow-elevated">
+            <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm text-content-primary font-medium">Loading location data...</span>
           </div>
         </div>
       )}
 
-      {/* Pulse animation for selected marker */}
       <style jsx global>{`
         @keyframes pulse {
           0%, 100% { transform: scale(1); opacity: 1; }
@@ -126,18 +130,17 @@ export default function InteractiveMap({
         zoomControl={true}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          key={isDark ? 'dark' : 'light'}
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
+          url={tileUrl}
         />
 
         <MapClickHandler onMapClick={handleMapClick} />
 
-        {/* Fly to selected location */}
         {selectedLocation && (
           <FlyToLocation lat={selectedLocation.lat} lon={selectedLocation.lon} />
         )}
 
-        {/* Landmark markers */}
         {landmarks.map((lm) => {
           const riskLevel = landmarkRiskLevels[lm.name];
           const color = riskLevel ? getRiskHexColor(riskLevel) : '#3b82f6';
@@ -168,7 +171,6 @@ export default function InteractiveMap({
           );
         })}
 
-        {/* Clicked position marker (when clicking arbitrary location) */}
         {clickedPos && !landmarks.some((lm) => lm.lat === clickedPos.lat && lm.lon === clickedPos.lon) && (
           <Marker
             position={[clickedPos.lat, clickedPos.lon]}
@@ -187,17 +189,17 @@ export default function InteractiveMap({
       </MapContainer>
 
       {/* Map legend */}
-      <div className="absolute bottom-4 left-4 z-[1000] bg-white/90 backdrop-blur-sm rounded-xl px-4 py-3 shadow-md text-xs">
-        <p className="font-semibold text-gray-700 mb-2">Risk Level</p>
+      <div className="absolute bottom-4 left-4 z-[1000] glass-card rounded-2xl px-4 py-3 text-xs">
+        <p className="font-semibold text-content-primary mb-2">Risk Level</p>
         <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-green-500 inline-block" /> Low
+          <span className="flex items-center gap-1.5 text-content-secondary">
+            <span className="w-3 h-3 rounded-full bg-risk-low inline-block" /> Low
           </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-amber-500 inline-block" /> Moderate
+          <span className="flex items-center gap-1.5 text-content-secondary">
+            <span className="w-3 h-3 rounded-full bg-risk-moderate inline-block" /> Moderate
           </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-red-500 inline-block" /> High
+          <span className="flex items-center gap-1.5 text-content-secondary">
+            <span className="w-3 h-3 rounded-full bg-risk-high inline-block" /> High
           </span>
         </div>
       </div>

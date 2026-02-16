@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import ThemeProvider from '@/components/providers/ThemeProvider';
+import SmoothScrollProvider from '@/components/providers/SmoothScroll';
 
 export const metadata: Metadata = {
   title: 'Prithvi — Environmental Safety for Seniors',
@@ -14,9 +16,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen antialiased">
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <body className="min-h-screen antialiased bg-surface-primary text-content-primary">
+        <ThemeProvider>
+          <SmoothScrollProvider>
+            {children}
+          </SmoothScrollProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

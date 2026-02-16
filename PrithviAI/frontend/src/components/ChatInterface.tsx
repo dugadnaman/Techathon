@@ -1,16 +1,19 @@
 'use client';
 
 /**
- * PrithviAI — AI Chat Interface
- * Natural language interface for environmental safety queries.
+ * Prithvi — AI Chat Interface
+ * Premium glass-styled chat with motion-enhanced messages.
  */
 
 import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Bot, User, Sparkles, Loader2 } from 'lucide-react';
 import { sendChatMessage, getChatSuggestions } from '@/lib/api';
 import { getRiskColor, getRiskBadgeBg } from '@/lib/utils';
 import { t } from '@/lib/translations';
 import type { ChatMessage, Language, AgeGroup, RiskLevel } from '@/types';
+
+const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 interface ChatInterfaceProps {
   language: Language;
@@ -27,7 +30,6 @@ export default function ChatInterface({ language, ageGroup, city }: ChatInterfac
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Accurate coordinates for each city
   const CITY_COORDS: Record<string, { lat: number; lon: number }> = {
     Pune: { lat: 18.5204, lon: 73.8567 },
     Mumbai: { lat: 19.0760, lon: 72.8777 },
@@ -40,12 +42,10 @@ export default function ChatInterface({ language, ageGroup, city }: ChatInterfac
 
   const coords = CITY_COORDS[city] || CITY_COORDS.Pune;
 
-  // Load suggestions on mount
   useEffect(() => {
     loadSuggestions();
   }, []);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -69,7 +69,6 @@ export default function ChatInterface({ language, ageGroup, city }: ChatInterfac
 
     setInput('');
 
-    // Add user message
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       role: 'user',
@@ -105,7 +104,7 @@ export default function ChatInterface({ language, ageGroup, city }: ChatInterfac
       const errorMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: '⚠️ Sorry, I could not process your request. Please make sure the backend server is running and try again.',
+        content: 'Sorry, I could not process your request. Please make sure the backend server is running and try again.',
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMsg]);
@@ -122,101 +121,115 @@ export default function ChatInterface({ language, ageGroup, city }: ChatInterfac
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-12rem)] bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-12rem)] glass-card-solid rounded-3xl overflow-hidden">
       {/* Chat Header */}
-      <div className="bg-gradient-to-r from-green-600 to-emerald-700 px-6 py-4 text-white">
+      <div className="bg-accent px-6 py-4 text-white">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
             <Bot size={22} />
           </div>
           <div>
             <h2 className="font-semibold">{t('chatAssistant', language)}</h2>
-            <p className="text-xs text-green-100">{t('chatSubtitle', language)}</p>
+            <p className="text-xs text-white/70">{t('chatSubtitle', language)}</p>
           </div>
         </div>
       </div>
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {messages.length === 0 && (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Sparkles className="text-green-500" size={28} />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              {t('chatWelcome', language)}
-            </h3>
-            <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">
-              {t('chatPlaceholder', language)}
-            </p>
-
-            {/* Suggestion chips */}
-            <div className="flex flex-wrap gap-2 justify-center max-w-lg mx-auto">
-              {suggestions.slice(0, 6).map((suggestion, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSend(suggestion)}
-                  className="px-4 py-2 bg-green-50 text-green-700 text-sm rounded-full
-                    hover:bg-green-100 transition-colors border border-green-100"
-                >
-                  {suggestion}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            {msg.role === 'assistant' && (
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Bot size={16} className="text-green-700" />
-              </div>
-            )}
-            <div
-              className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                msg.role === 'user'
-                  ? 'bg-green-600 text-white rounded-br-sm'
-                  : 'bg-gray-50 text-gray-800 rounded-bl-sm border border-gray-100'
-              }`}
+        <AnimatePresence initial={false}>
+          {messages.length === 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: EASE_OUT }}
+              className="text-center py-12"
             >
-              {/* Risk badge for assistant messages */}
-              {msg.role === 'assistant' && msg.risk_level && (
-                <span className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full text-white mb-2 ${getRiskBadgeBg(msg.risk_level)}`}>
-                  {msg.risk_level} RISK
-                </span>
+              <div className="w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="text-accent" size={28} />
+              </div>
+              <h3 className="text-lg font-semibold text-content-primary mb-2">
+                {t('chatWelcome', language)}
+              </h3>
+              <p className="text-content-secondary text-sm mb-6 max-w-md mx-auto">
+                {t('chatPlaceholder', language)}
+              </p>
+
+              <div className="flex flex-wrap gap-2 justify-center max-w-lg mx-auto">
+                {suggestions.slice(0, 6).map((suggestion, idx) => (
+                  <motion.button
+                    key={idx}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => handleSend(suggestion)}
+                    className="px-4 py-2 bg-accent/5 text-accent text-sm rounded-full
+                      hover:bg-accent/10 transition-colors border border-accent/10"
+                  >
+                    {suggestion}
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {messages.map((msg) => (
+            <motion.div
+              key={msg.id}
+              initial={{ opacity: 0, y: 12, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.35, ease: EASE_OUT }}
+              className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              {msg.role === 'assistant' && (
+                <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Bot size={16} className="text-accent" />
+                </div>
               )}
-              <div className="text-sm whitespace-pre-wrap leading-relaxed">
-                {msg.content}
+              <div
+                className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                  msg.role === 'user'
+                    ? 'bg-accent text-white rounded-br-sm'
+                    : 'glass-card-solid text-content-primary rounded-bl-sm'
+                }`}
+              >
+                {msg.role === 'assistant' && msg.risk_level && (
+                  <span className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full text-white mb-2 ${getRiskBadgeBg(msg.risk_level)}`}>
+                    {msg.risk_level} RISK
+                  </span>
+                )}
+                <div className="text-sm whitespace-pre-wrap leading-relaxed">
+                  {msg.content}
+                </div>
               </div>
-            </div>
-            {msg.role === 'user' && (
-              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
-                <User size={16} className="text-white" />
-              </div>
-            )}
-          </div>
-        ))}
+              {msg.role === 'user' && (
+                <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center flex-shrink-0">
+                  <User size={16} className="text-white" />
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </AnimatePresence>
 
         {loading && (
-          <div className="flex gap-3 justify-start">
-            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-              <Bot size={16} className="text-green-700" />
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex gap-3 justify-start"
+          >
+            <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center">
+              <Bot size={16} className="text-accent" />
             </div>
-            <div className="bg-gray-50 rounded-2xl rounded-bl-sm px-4 py-3 border border-gray-100">
-              <Loader2 className="w-5 h-5 text-green-500 animate-spin" />
+            <div className="glass-card-solid rounded-2xl rounded-bl-sm px-4 py-3">
+              <Loader2 className="w-5 h-5 text-accent animate-spin" />
             </div>
-          </div>
+          </motion.div>
         )}
 
         <div ref={messagesEndRef} />
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-gray-100 px-4 py-3 bg-gray-50/50">
+      <div className="border-t border-surface-secondary px-4 py-3 bg-surface-secondary/30">
         <div className="flex items-center gap-2">
           <input
             ref={inputRef}
@@ -225,19 +238,21 @@ export default function ChatInterface({ language, ageGroup, city }: ChatInterfac
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={t('typeMessage', language)}
-            className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-xl
-              focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent
-              text-sm text-gray-800 placeholder:text-gray-400"
+            className="flex-1 px-4 py-3 bg-surface-card border border-surface-secondary rounded-2xl
+              focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40
+              text-sm text-content-primary placeholder:text-content-secondary"
             disabled={loading}
           />
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => handleSend()}
             disabled={!input.trim() || loading}
-            className="p-3 bg-green-600 text-white rounded-xl hover:bg-green-700
-              disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="p-3 bg-accent text-white rounded-2xl hover:bg-accent-dark
+              disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-glow-green"
           >
             <Send size={18} />
-          </button>
+          </motion.button>
         </div>
       </div>
     </div>
