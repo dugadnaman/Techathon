@@ -5,7 +5,7 @@
  * Premium metric cards with staggered scale-in animations.
  */
 
-import { motion, useInView } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import type { EnvironmentData } from '@/types';
 import type { Language } from '@/types';
@@ -21,8 +21,6 @@ interface EnvironmentSnapshotProps {
 }
 
 export default function EnvironmentSnapshot({ data, loading, language = 'en' }: EnvironmentSnapshotProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: '-40px' });
 
   if (loading) {
     return (
@@ -116,7 +114,7 @@ export default function EnvironmentSnapshot({ data, loading, language = 'en' }: 
   ];
 
   return (
-    <div ref={ref}>
+    <div>
       {/* Confidence Badge */}
       {data.data_quality && (
         <div className="mb-3">
@@ -128,11 +126,11 @@ export default function EnvironmentSnapshot({ data, loading, language = 'en' }: 
         {metrics.map((metric, idx) => (
           <motion.div
             key={metric.label}
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : {}}
+            initial={{ opacity: 0, y: 12, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{
-              duration: 0.5,
-              delay: idx * 0.06,
+              duration: 0.35,
+              delay: idx * 0.05,
               ease: [0.22, 1, 0.36, 1],
             }}
             whileHover={{ scale: 1.03, y: -2 }}
