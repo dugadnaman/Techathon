@@ -14,6 +14,7 @@ import AlertBanner from '@/components/AlertBanner';
 import DailySummaryCard from '@/components/DailySummary';
 import EnvironmentSnapshot from '@/components/EnvironmentSnapshot';
 import ForecastChart from '@/components/ForecastChart';
+import DailyIntelligenceSection from '@/components/DailyIntelligenceSection';
 import { RevealSection, StaggerContainer, StaggerItem, FadeIn } from '@/components/motion';
 import { assessRisk, getAlerts, getDailySummary, getCurrentEnvironment } from '@/lib/api';
 import type { SafetyIndex, HealthAlert, DailySummary, EnvironmentData, Language, AgeGroup, ActivityIntent } from '@/types';
@@ -388,6 +389,14 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ═══════════════ DAILY INTELLIGENCE ═══════════════ */}
+      {(dailySummary?.forecast || safetyIndex) && (
+        <DailyIntelligenceSection
+          forecastPoints={dailySummary?.forecast?.points || []}
+          safetyIndex={safetyIndex}
+        />
+      )}
 
       {/* ═══════════════ RISK FACTORS ═══════════════ */}
       {safetyIndex && (

@@ -1,0 +1,444 @@
+'use client';
+
+/**
+ * Prithvi — Daily Intelligence Section
+ * Three-module predictive intelligence panel:
+ * 1. 24-Hour Risk Timeline
+ * 2. Best Time to Go Outside
+ * 3. Primary Concern of the Day
+ */
+
+import { useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { Clock, Sun, Shield, TrendingUp, TrendingDown, Minus, AlertTriangle } from 'lucide-react';
+import { RevealSection, StaggerContainer, StaggerItem } from '@/components/motion';
+import type { ForecastPoint, SafetyIndex, RiskLevel } from '@/types';
+
+const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+interface DailyIntelligenceSectionProps {
+  forecastPoints: ForecastPoint[];
+  safetyIndex: SafetyIndex | null;
+  previousScore?: number | null;
+}
+
+// ─── Helpers ────────────────────────────────────────────
+
+function riskColor(level: RiskLevel): string {
+  switch (level) {
+    case 'LOW': return 'bg-risk-low';
+    case 'MODERATE': return 'bg-risk-moderate';
+    case 'HIGH': return 'bg-risk-high';
+    default: return 'bg-surface-secondary';
+  }
+}
+
+function riskText(level: RiskLevel): string {
+  switch (level) {
+    case 'LOW': return 'text-risk-low';
+    case 'MODERATE': return 'text-risk-moderate';
+    case 'HIGH': return 'text-risk-high';
+    default: return 'text-content-secondary';
+  }
+}
+
+function riskLabel(level: RiskLevel): string {
+  switch (level) {
+    case 'LOW': return 'Low';
+    case 'MODERATE': return 'Moderate';
+    case 'HIGH': return 'High';
+    default: return level;
+  }
+}
+
+interface TimeBlock {
+  label: string;
+  icon: string;
+  level: RiskLevel;
+  score: number;
+  hours: string;
+  isPeak: boolean;
+}
+
+function computeTimeBlocks(points: ForecastPoint[]): TimeBlock[] {
+  const blocks: { label: string; icon: string; hours: string; range: [number, number] }[] = [
+    { label: 'Morning', icon: '🌅', hours: '6 AM – 12 PM', range: [6, 12] },
+    { label: 'Afternoon', icon: '☀️', hours: '12 PM – 5 PM', range: [12, 17] },
+    { label: 'Evening', icon: '🌆', hours: '5 PM – 9 PM', range: [17, 21] },
+    { label: 'Night', icon: '🌙', hours: '9 PM – 6 AM', range: [21, 30] },
+  ];
+
+  const result: TimeBlock[] = [];
+  let worstScore = -1;
+  let worstIdx = -1;
+
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    const matching = points.filter((p) => {
+      const hour = new Date(p.time).getHours();
+      if (b.range[0] <= 23 && b.range[1] <= 24) {
+        return hour >= b.range[0] && hour < b.range[1];
+      }
+      // Night wraps around
+      return hour >= b.range[0] || hour < (b.range[1] - 24);
+    });
+
+    let avgScore = 50;
+    let level: RiskLevel = 'MODERATE';
+    if (matching.length > 0) {
+      avgScore = Math.round(matching.reduce((s, p) => s + p.predicted_score, 0) / matching.length);
+      const highCount = matching.filter((p) => p.predicted_level === 'HIGH').length;
+      const lowCount = matching.filter((p) => p.predicted_level === 'LOW').length;
+      if (highCount > matching.length / 2) level = 'HIGH';
+      else if (lowCount > matching.length / 2) level = 'LOW';
+      else level = 'MODERATE';
+    }
+
+    if (avgScore > worstScore) {
+      worstScore = avgScore;
+      worstIdx = i;
+    }
+
+    result.push({
+      label: b.label,
+      icon: b.icon,
+      level,
+      score: avgScore,
+      hours: b.hours,
+      isPeak: false,
+    });
+  }
+
+  if (worstIdx >= 0) result[worstIdx].isPeak = true;
+  return result;
+}
+
+interface BestWindow {
+  found: boolean;
+  timeRange: string;
+  level: RiskLevel;
+  advisory: string;
+}
+
+function computeBestWindow(points: ForecastPoint[]): BestWindow {
+  // Find longest consecutive LOW window during 5am-9pm
+  const daytime = points.filter((p) => {
+    const h = new Date(p.time).getHours();
+    return h >= 5 && h <= 21;
+  });
+
+  if (daytime.length === 0) {
+    return { found: false, timeRange: '', level: 'HIGH', advisory: 'No forecast data available.' };
+  }
+
+  let bestStart = -1;
+  let bestLen = 0;
+  let curStart = -1;
+  let curLen = 0;
+
+  for (let i = 0; i < daytime.length; i++) {
+    if (daytime[i].predicted_level === 'LOW') {
+      if (curStart === -1) curStart = i;
+      curLen++;
+      if (curLen > bestLen) {
+        bestLen = curLen;
+        bestStart = curStart;
+      }
+    } else {
+      curStart = -1;
+      curLen = 0;
+    }
+  }
+
+  // If no LOW window, look for MODERATE
+  if (bestLen === 0) {
+    for (let i = 0; i < daytime.length; i++) {
+      if (daytime[i].predicted_level !== 'HIGH') {
+        if (curStart === -1) curStart = i;
+        curLen++;
+        if (curLen > bestLen) {
+          bestLen = curLen;
+          bestStart = curStart;
+        }
+      } else {
+        curStart = -1;
+        curLen = 0;
+      }
+    }
+  }
+
+  if (bestLen === 0 || bestStart === -1) {
+    return {
+      found: false,
+      timeRange: '',
+      level: 'HIGH',
+      advisory: 'No low-risk outdoor window today. Limit outdoor exposure.',
+    };
+  }
+
+  const startTime = new Date(daytime[bestStart].time);
+  const endTime = new Date(daytime[Math.min(bestStart + bestLen - 1, daytime.length - 1)].time);
+  endTime.setHours(endTime.getHours() + 1);
+
+  const fmt = (d: Date) => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  const windowLevel = daytime[bestStart].predicted_level;
+
+  return {
+    found: true,
+    timeRange: `${fmt(startTime)} – ${fmt(endTime)}`,
+    level: windowLevel,
+    advisory:
+      windowLevel === 'LOW'
+        ? 'Low risk conditions expected. Safe for outdoor activities.'
+        : 'Moderate conditions. Take precautions if going out.',
+  };
+}
+
+interface PrimaryConcern {
+  factor: string;
+  icon: string;
+  score: number;
+  trend: 'up' | 'down' | 'stable';
+  trendPercent: number;
+  explanation: string;
+}
+
+function computePrimaryConcern(
+  safetyIndex: SafetyIndex | null,
+  previousScore?: number | null,
+): PrimaryConcern | null {
+  if (!safetyIndex || safetyIndex.all_risks.length === 0) return null;
+
+  const sorted = [...safetyIndex.all_risks].sort((a, b) => b.score - a.score);
+  const top = sorted[0];
+
+  // Simulate trend from previous score if available
+  let trend: 'up' | 'down' | 'stable' = 'stable';
+  let trendPercent = 0;
+  if (previousScore != null && previousScore > 0) {
+    const diff = ((safetyIndex.overall_score - previousScore) / previousScore) * 100;
+    trendPercent = Math.abs(Math.round(diff));
+    trend = diff > 3 ? 'up' : diff < -3 ? 'down' : 'stable';
+  } else {
+    // Derive from score severity
+    if (top.score > 70) {
+      trend = 'up';
+      trendPercent = Math.round((top.score - 50) / 50 * 20);
+    } else if (top.score < 30) {
+      trend = 'down';
+      trendPercent = Math.round((50 - top.score) / 50 * 15);
+    }
+  }
+
+  return {
+    factor: top.name,
+    icon: top.icon || '📊',
+    score: Math.round(top.score),
+    trend,
+    trendPercent,
+    explanation: top.reason,
+  };
+}
+
+// ─── Sub-components ──────────────────────────────────────
+
+function RiskTimeline({ blocks }: { blocks: TimeBlock[] }) {
+  return (
+    <div className="glass-card-solid rounded-2xl p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <Clock size={16} className="text-accent" />
+        <h3 className="text-sm font-bold text-content-primary tracking-tight">24-Hour Risk Timeline</h3>
+      </div>
+      <div className="grid grid-cols-4 gap-2">
+        {blocks.map((block, i) => (
+          <motion.div
+            key={block.label}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: i * 0.08, ease: EASE_OUT }}
+            className={`relative rounded-xl p-3 text-center border transition-colors ${
+              block.isPeak
+                ? 'border-risk-high/30 bg-risk-high/5'
+                : 'border-transparent bg-surface-secondary/40'
+            }`}
+          >
+            {block.isPeak && (
+              <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold bg-risk-high text-white px-2 py-0.5 rounded-full">
+                PEAK
+              </span>
+            )}
+            <div className="text-lg mb-1">{block.icon}</div>
+            <div className="text-xs font-semibold text-content-primary mb-1">{block.label}</div>
+            {/* Risk bar */}
+            <div className="w-full h-1.5 bg-surface-secondary rounded-full overflow-hidden mb-1.5">
+              <motion.div
+                className={`h-full rounded-full ${riskColor(block.level)}`}
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min(block.score, 100)}%` }}
+                transition={{ duration: 0.8, delay: 0.2 + i * 0.1, ease: EASE_OUT }}
+              />
+            </div>
+            <div className={`text-xs font-bold ${riskText(block.level)}`}>
+              {riskLabel(block.level)}
+            </div>
+            <div className="text-[10px] text-content-secondary mt-0.5">{block.hours}</div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BestTimeAdvisory({ window }: { window: BestWindow }) {
+  return (
+    <div className="glass-card-solid rounded-2xl p-5 flex flex-col justify-between h-full">
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <Sun size={16} className="text-accent" />
+          <h3 className="text-sm font-bold text-content-primary tracking-tight">Best Time to Go Outside</h3>
+        </div>
+
+        {window.found ? (
+          <>
+            <p className="text-xs text-content-secondary mb-2">Recommended for seniors:</p>
+            <div className="inline-flex items-baseline gap-1 px-3 py-1.5 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] mb-3">
+              <span className="text-xl font-extrabold tracking-tight text-content-primary">
+                {window.timeRange}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 mb-2">
+              <span className={`w-2 h-2 rounded-full ${riskColor(window.level)}`} />
+              <span className={`text-xs font-bold ${riskText(window.level)}`}>
+                {riskLabel(window.level)} Risk
+              </span>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-start gap-2 mb-3">
+            <AlertTriangle size={16} className="text-risk-high mt-0.5 flex-shrink-0" />
+            <p className="text-sm font-semibold text-risk-high">
+              No low-risk outdoor window today.
+            </p>
+          </div>
+        )}
+      </div>
+      <p className="text-xs text-content-secondary leading-relaxed">{window.advisory}</p>
+    </div>
+  );
+}
+
+function PrimaryConcernCard({ concern }: { concern: PrimaryConcern }) {
+  const TrendIcon = concern.trend === 'up' ? TrendingUp : concern.trend === 'down' ? TrendingDown : Minus;
+  const trendColor =
+    concern.trend === 'up' ? 'text-risk-high' : concern.trend === 'down' ? 'text-risk-low' : 'text-content-secondary';
+  const trendLabel =
+    concern.trend === 'up' ? 'Increased' : concern.trend === 'down' ? 'Decreased' : 'Stable';
+
+  return (
+    <div className="glass-card-solid rounded-2xl p-5 flex flex-col justify-between h-full">
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <Shield size={16} className="text-accent" />
+          <h3 className="text-sm font-bold text-content-primary tracking-tight">Primary Concern Today</h3>
+        </div>
+
+        <div className="flex items-center gap-3 mb-3">
+          <span className="text-2xl">{concern.icon}</span>
+          <div>
+            <div className="text-base font-extrabold text-content-primary tracking-tight">{concern.factor}</div>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <TrendIcon size={13} className={trendColor} />
+              <span className={`text-xs font-bold ${trendColor}`}>
+                {trendLabel}{concern.trendPercent > 0 ? ` ${concern.trendPercent}%` : ''}
+              </span>
+              <span className="text-xs text-content-secondary">vs yesterday</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="inline-flex items-baseline gap-1 px-2.5 py-1 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] mb-3">
+          <span className="text-2xl font-extrabold tracking-tighter text-content-primary">{concern.score}</span>
+          <span className="text-xs font-semibold text-content-secondary">/100</span>
+        </div>
+      </div>
+
+      <p className="text-xs text-content-secondary leading-relaxed line-clamp-3">{concern.explanation}</p>
+    </div>
+  );
+}
+
+// ─── Main Section ────────────────────────────────────────
+
+export default function DailyIntelligenceSection({
+  forecastPoints,
+  safetyIndex,
+  previousScore,
+}: DailyIntelligenceSectionProps) {
+  const timeBlocks = useMemo(() => computeTimeBlocks(forecastPoints), [forecastPoints]);
+  const bestWindow = useMemo(() => computeBestWindow(forecastPoints), [forecastPoints]);
+  const primaryConcern = useMemo(() => computePrimaryConcern(safetyIndex, previousScore), [safetyIndex, previousScore]);
+
+  if (forecastPoints.length === 0 && !safetyIndex) return null;
+
+  return (
+    <section className="py-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <RevealSection>
+        <div className="flex items-center gap-2 mb-4">
+          <span className="w-1.5 h-6 rounded-full bg-accent" />
+          <h2 className="text-lg font-bold text-content-primary tracking-tight">Daily Intelligence</h2>
+        </div>
+      </RevealSection>
+
+      <StaggerContainer className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Timeline spans full width on mobile, 1 col on desktop */}
+        <StaggerItem className="lg:col-span-3">
+          <RiskTimeline blocks={timeBlocks} />
+        </StaggerItem>
+
+        <StaggerItem>
+          <BestTimeAdvisory window={bestWindow} />
+        </StaggerItem>
+
+        <StaggerItem>
+          {primaryConcern ? (
+            <PrimaryConcernCard concern={primaryConcern} />
+          ) : (
+            <div className="glass-card-solid rounded-2xl p-5 flex items-center justify-center h-full">
+              <p className="text-sm text-content-secondary">Analysis loading...</p>
+            </div>
+          )}
+        </StaggerItem>
+
+        {/* Quick advisory card */}
+        <StaggerItem>
+          <div className="glass-card-solid rounded-2xl p-5 flex flex-col justify-between h-full">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <AlertTriangle size={16} className="text-accent" />
+                <h3 className="text-sm font-bold text-content-primary tracking-tight">Quick Advisory</h3>
+              </div>
+              {safetyIndex ? (
+                <ul className="space-y-2">
+                  {safetyIndex.recommendations.slice(0, 3).map((rec, i) => (
+                    <motion.li
+                      key={i}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: i * 0.08, ease: EASE_OUT }}
+                      className="flex items-start gap-2 text-xs text-content-secondary leading-relaxed"
+                    >
+                      <span className="text-accent mt-0.5 flex-shrink-0">•</span>
+                      <span>{rec}</span>
+                    </motion.li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-content-secondary">Loading recommendations...</p>
+              )}
+            </div>
+          </div>
+        </StaggerItem>
+      </StaggerContainer>
+    </section>
+  );
+}
