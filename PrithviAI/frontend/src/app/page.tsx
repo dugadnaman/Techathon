@@ -194,40 +194,40 @@ export default function HomePage() {
       <Navbar language={language} onLanguageChange={setLanguage} />
 
       {/* ═══════════════ HERO SECTION ═══════════════ */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center px-4 pt-20 overflow-hidden">
+      <section className="relative flex flex-col items-center justify-center px-4 pt-24 pb-8 overflow-hidden">
         {/* Subtle background gradient orbs */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 -left-32 w-96 h-96 rounded-full bg-accent/5 blur-3xl" />
-          <div className="absolute bottom-1/4 -right-32 w-96 h-96 rounded-full bg-risk-moderate/5 blur-3xl" />
+          <div className="absolute top-1/4 -left-32 w-64 h-64 rounded-full bg-accent/5 blur-3xl" />
+          <div className="absolute bottom-1/4 -right-32 w-64 h-64 rounded-full bg-blue-400/5 blur-3xl" />
         </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: EASE_OUT }}
+          transition={{ duration: 0.5, ease: EASE_OUT }}
           className="text-center relative z-10 max-w-3xl mx-auto"
         >
           <motion.p
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: EASE_OUT }}
-            className="text-label uppercase tracking-[0.2em] text-accent mb-6 font-medium"
+            transition={{ duration: 0.4, delay: 0.05, ease: EASE_OUT }}
+            className="text-micro uppercase tracking-[0.25em] text-accent mb-3 font-semibold"
           >
             Environmental Intelligence
           </motion.p>
           <motion.h1
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: EASE_OUT }}
-            className="text-hero-lg md:text-hero-xl font-bold text-content-primary mb-6 leading-[1.1]"
+            transition={{ duration: 0.5, delay: 0.1, ease: EASE_OUT }}
+            className="text-5xl md:text-6xl font-extrabold text-content-primary mb-3 tracking-tight"
           >
             <span className="gradient-text">Prithvi</span>
           </motion.h1>
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.35, ease: EASE_OUT }}
-            className="text-body-lg text-content-secondary max-w-xl mx-auto mb-10"
+            transition={{ duration: 0.4, delay: 0.2, ease: EASE_OUT }}
+            className="text-sm sm:text-base text-content-secondary max-w-md mx-auto mb-5"
           >
             {t('tagline', language)}
           </motion.p>
@@ -236,13 +236,14 @@ export default function HomePage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.5, ease: EASE_OUT }}
-            className="inline-flex items-center gap-2 glass-card rounded-full px-5 py-2.5 mb-4"
+            transition={{ duration: 0.35, delay: 0.3, ease: EASE_OUT }}
+            whileHover={{ scale: 1.03 }}
+            className="inline-flex items-center gap-2 glass-card rounded-full px-4 py-2"
           >
             {detectingLocation ? (
-              <Loader2 size={15} className="animate-spin text-accent" />
+              <Loader2 size={14} className="animate-spin text-accent" />
             ) : (
-              <MapPin size={15} className="text-accent" />
+              <MapPin size={14} className="text-accent" />
             )}
             <span className="text-sm text-content-secondary">
               {detectingLocation
@@ -253,25 +254,10 @@ export default function HomePage() {
             </span>
           </motion.div>
         </motion.div>
-
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2, duration: 0.8 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-        >
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <ChevronDown size={24} className="text-content-secondary/40" />
-          </motion.div>
-        </motion.div>
       </section>
 
       {/* ═══════════════ CONTROLS BAR ═══════════════ */}
-      <section className="section-padding max-w-5xl mx-auto">
+      <section className="py-4 px-4 max-w-5xl mx-auto">
         <RevealSection>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-4 py-2.5">
@@ -343,10 +329,11 @@ export default function HomePage() {
             </div>
 
             <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
+              whileHover={{ scale: 1.06, y: -1 }}
+              whileTap={{ scale: 0.92 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 15 }}
               onClick={loadData}
-              className="px-5 py-2.5 bg-accent text-white text-sm rounded-2xl font-medium shadow-glow-green transition-shadow hover:shadow-glow-green/80"
+              className="px-5 py-2.5 bg-accent text-white text-sm rounded-2xl font-medium shadow-glow-green hover:shadow-glow-green/80 active:shadow-none"
             >
               {t('refresh', language)}
             </motion.button>
@@ -372,22 +359,30 @@ export default function HomePage() {
 
       {/* ═══════════════ ALERTS ═══════════════ */}
       {alerts.length > 0 && (
-        <div className="max-w-5xl mx-auto px-4 mb-8">
+        <div className="max-w-5xl mx-auto px-4 mb-4">
           <AlertBanner alerts={alerts} />
         </div>
       )}
 
-      {/* ═══════════════ SAFETY INDEX + ENVIRONMENT ═══════════════ */}
-      <section className="section-padding max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* ═══════════════ ENVIRONMENT DATA (first — most visible) ═══════════════ */}
+      <section className="py-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <RevealSection>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="w-1.5 h-6 rounded-full bg-accent" />
+            <h2 className="text-lg font-bold text-content-primary tracking-tight">Live Environment Data</h2>
+          </div>
+          <EnvironmentSnapshot data={envData} loading={loading} language={language} />
+        </RevealSection>
+      </section>
+
+      {/* ═══════════════ SAFETY INDEX + DAILY SUMMARY ═══════════════ */}
+      <section className="py-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <RevealSection className="lg:col-span-1">
             <SafetyIndexDisplay safetyIndex={safetyIndex} loading={loading} language={language} />
           </RevealSection>
-          <div className="lg:col-span-2 space-y-8">
-            <RevealSection delay={0.1}>
-              <EnvironmentSnapshot data={envData} loading={loading} language={language} />
-            </RevealSection>
-            <RevealSection delay={0.2}>
+          <div className="lg:col-span-2 space-y-5">
+            <RevealSection delay={0.05}>
               <DailySummaryCard summary={dailySummary} loading={loading} language={language} />
             </RevealSection>
           </div>
@@ -396,16 +391,16 @@ export default function HomePage() {
 
       {/* ═══════════════ RISK FACTORS ═══════════════ */}
       {safetyIndex && (
-        <section className="section-padding max-w-7xl mx-auto">
+        <section className="py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <RevealSection>
-            <div className="flex items-center gap-3 mb-8">
-              <Shield size={22} className="text-accent" />
-              <h2 className="text-section font-bold text-content-primary">
+            <div className="flex items-center gap-2 mb-5">
+              <Shield size={18} className="text-accent" />
+              <h2 className="text-lg font-bold text-content-primary tracking-tight">
                 {t('detailedRiskAnalysis', language)}
               </h2>
             </div>
           </RevealSection>
-          <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {safetyIndex.all_risks.map((risk, idx) => (
               <StaggerItem key={idx}>
                 <RiskCard risk={risk} expanded />
@@ -417,7 +412,7 @@ export default function HomePage() {
 
       {/* ═══════════════ FORECAST ═══════════════ */}
       {dailySummary?.forecast && (
-        <section className="section-padding max-w-5xl mx-auto">
+        <section className="py-6 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
           <RevealSection>
             <ForecastChart points={dailySummary.forecast.points} />
           </RevealSection>
@@ -425,7 +420,7 @@ export default function HomePage() {
       )}
 
       {/* ═══════════════ FOOTER ═══════════════ */}
-      <footer className="section-padding text-center border-t border-surface-secondary">
+      <footer className="py-8 px-4 text-center border-t border-surface-secondary">
         <FadeIn>
           <p className="text-sm text-content-secondary/60">
             {t('footer', language)}

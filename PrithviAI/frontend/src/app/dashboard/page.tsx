@@ -91,9 +91,9 @@ export default function DashboardPage() {
     <>
       <Navbar language={language} onLanguageChange={setLanguage} />
 
-      <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <main className="pt-20 pb-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         {/* Header */}
-        <RevealSection className="mb-12">
+        <RevealSection className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             <Building2 className="text-accent" size={28} />
             <h1 className="text-section font-bold text-content-primary">
@@ -104,7 +104,7 @@ export default function DashboardPage() {
         </RevealSection>
 
         {/* Area-wise Risk Summary */}
-        <section className="mb-16">
+        <section className="mb-8">
           <RevealSection>
             <div className="flex items-center gap-2 mb-6">
               <MapPin size={18} className="text-accent" />
@@ -157,7 +157,7 @@ export default function DashboardPage() {
         </section>
 
         {/* Charts Grid */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
           <ChartCard
             title={t('aqiTrend', language)}
             subtitle="AQI over time"

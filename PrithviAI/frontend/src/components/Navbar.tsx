@@ -35,7 +35,7 @@ export default function Navbar({ language, onLanguageChange }: NavbarProps) {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 bg-gradient-to-br from-accent to-accent-dark rounded-xl flex items-center justify-center shadow-glow-green">
+            <div className="w-9 h-9 bg-gradient-to-br from-accent to-accent-dark rounded-xl flex items-center justify-center shadow-glow-green transition-transform group-hover:scale-110">
               <span className="text-white text-base">🌍</span>
             </div>
             <span className="text-xl font-bold gradient-text tracking-tight">

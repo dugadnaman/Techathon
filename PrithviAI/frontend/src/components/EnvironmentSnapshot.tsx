@@ -135,7 +135,9 @@ export default function EnvironmentSnapshot({ data, loading, language = 'en' }: 
               delay: idx * 0.06,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="glass-card-solid rounded-2xl p-4 hover:shadow-elevated transition-shadow duration-300"
+            whileHover={{ scale: 1.03, y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            className="glass-card-solid rounded-2xl p-4 cursor-default shadow-sm hover:shadow-elevated transition-shadow duration-200"
           >
             <div className="flex items-center gap-2 mb-2">
               {metric.icon}

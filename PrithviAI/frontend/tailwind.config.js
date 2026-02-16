@@ -48,8 +48,8 @@ module.exports = {
       boxShadow: {
         'glass': '0 8px 32px rgba(0, 0, 0, 0.08)',
         'glass-dark': '0 8px 32px rgba(0, 0, 0, 0.3)',
-        'glow-green': '0 0 40px rgba(20, 184, 166, 0.15)',
-        'glow-green-dark': '0 0 40px rgba(20, 184, 166, 0.3)',
+        'glow-green': '0 0 40px rgba(59, 130, 246, 0.18)',
+        'glow-green-dark': '0 0 40px rgba(59, 130, 246, 0.35)',
         'glow-red': '0 0 30px rgba(239, 68, 68, 0.2)',
         'glow-amber': '0 0 30px rgba(245, 158, 11, 0.2)',
         'elevated': '0 12px 40px -12px rgba(0, 0, 0, 0.12)',

@@ -41,7 +41,9 @@ export default function RiskCard({ risk, expanded = false, index = 0 }: RiskCard
       initial={{ opacity: 0, scale: 0.96 }}
       animate={isInView ? { opacity: 1, scale: 1 } : {}}
       transition={{ duration: 0.5, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
-      className={`rounded-2xl border p-5 transition-shadow hover:shadow-elevated ${riskBg}`}
+      whileHover={{ scale: 1.02, y: -2 }}
+      whileTap={{ scale: 0.98 }}
+      className={`rounded-2xl border p-5 cursor-default hover:shadow-elevated transition-shadow duration-200 ${riskBg}`}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
