@@ -15,6 +15,7 @@ import DailySummaryCard from '@/components/DailySummary';
 import EnvironmentSnapshot from '@/components/EnvironmentSnapshot';
 import ForecastChart from '@/components/ForecastChart';
 import DailyIntelligenceSection from '@/components/DailyIntelligenceSection';
+import EnvironmentAtGlance from '@/components/EnvironmentAtGlance';
 import { RevealSection, StaggerContainer, StaggerItem, FadeIn } from '@/components/motion';
 import { assessRisk, getAlerts, getDailySummary, getCurrentEnvironment } from '@/lib/api';
 import type { SafetyIndex, HealthAlert, DailySummary, EnvironmentData, Language, AgeGroup, ActivityIntent } from '@/types';
@@ -382,9 +383,14 @@ export default function HomePage() {
           <RevealSection>
             <SafetyIndexDisplay safetyIndex={safetyIndex} loading={loading} language={language} />
           </RevealSection>
-          <RevealSection delay={0.05}>
-            <DailySummaryCard summary={dailySummary} loading={loading} language={language} />
-          </RevealSection>
+          <div className="space-y-4">
+            <RevealSection delay={0.05}>
+              <DailySummaryCard summary={dailySummary} loading={loading} language={language} />
+            </RevealSection>
+            <RevealSection delay={0.1}>
+              <EnvironmentAtGlance data={envData} />
+            </RevealSection>
+          </div>
         </div>
       </section>
 

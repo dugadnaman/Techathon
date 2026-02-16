@@ -169,3 +169,41 @@ button, a, input, select {
 .alert-pulse {
   animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* ─── Page Load Animation ─── */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+body {
+  animation: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ─── Interactive Element Hover Glow ─── */
+.glass-card-solid {
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.glass-card-solid:hover {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.06);
+}
+
+.dark .glass-card-solid:hover {
+  box-shadow: 0 0 20px rgba(96, 165, 250, 0.08);
+}
+
+/* ─── Magnetic Hover Class ─── */
+.magnetic-hover {
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.magnetic-hover:hover {
+  transform: translateY(-1px);
+}

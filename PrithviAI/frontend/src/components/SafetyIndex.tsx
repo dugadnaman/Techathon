@@ -5,8 +5,7 @@
  * Premium animated circular gauge with stroke animation and glow effects.
  */
 
-import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { motion } from 'framer-motion';
 import type { SafetyIndex } from '@/types';
 import type { Language } from '@/types';
 import { getRiskColor, getScoreRingColor } from '@/lib/utils';
@@ -39,8 +38,7 @@ function getRiskGradient(level: string): string {
 }
 
 export default function SafetyIndexDisplay({ safetyIndex, loading, language = 'en' }: SafetyIndexDisplayProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true });
+  /* Parent RevealSection handles scroll-gate; always animate here */
 
   if (loading) {
     return (
@@ -58,7 +56,7 @@ export default function SafetyIndexDisplay({ safetyIndex, loading, language = 'e
   const progress = (overall_score / 100) * circumference;
 
   return (
-    <div ref={ref} className={`glass-card-solid rounded-3xl p-5 md:p-6 ${getRiskGradient(overall_level)}`}>
+    <div className={`glass-card-solid rounded-3xl p-5 md:p-6 ${getRiskGradient(overall_level)}`}>
       {/* Header */}
       <div className="text-center mb-3">
         <h2 className="text-base font-semibold text-content-primary">
@@ -97,7 +95,7 @@ export default function SafetyIndexDisplay({ safetyIndex, loading, language = 'e
               strokeLinecap="round"
               strokeDasharray={circumference}
               initial={{ strokeDashoffset: circumference }}
-              animate={isInView ? { strokeDashoffset: circumference - progress } : { strokeDashoffset: circumference }}
+              animate={{ strokeDashoffset: circumference - progress }}
               transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
             />
           </svg>
@@ -110,7 +108,7 @@ export default function SafetyIndexDisplay({ safetyIndex, loading, language = 'e
             </span>
             <motion.span
               initial={{ opacity: 0, scale: 0.9 }}
-              animate={isInView ? { opacity: 1, scale: 1 } : {}}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 1.2, ease: [0.22, 1, 0.36, 1] }}
               className={`text-xs font-semibold mt-2 px-3 py-1 rounded-full text-white
                 ${overall_level === 'LOW' ? 'bg-risk-low' : overall_level === 'MODERATE' ? 'bg-risk-moderate' : 'bg-risk-high'}`}
@@ -124,7 +122,7 @@ export default function SafetyIndexDisplay({ safetyIndex, loading, language = 'e
       {/* Summary */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="text-center mb-4"
       >
@@ -142,7 +140,7 @@ export default function SafetyIndexDisplay({ safetyIndex, loading, language = 'e
               <motion.div
                 key={idx}
                 initial={{ opacity: 0, x: -16 }}
-                animate={isInView ? { opacity: 1, x: 0 } : {}}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: 0.8 + idx * 0.1, ease: [0.22, 1, 0.36, 1] }}
                 className={`flex items-center justify-between p-2.5 rounded-xl border border-white/10
                   ${risk.level === 'HIGH' ? 'bg-risk-high/5' : risk.level === 'MODERATE' ? 'bg-risk-moderate/5' : 'bg-risk-low/5'}`}
