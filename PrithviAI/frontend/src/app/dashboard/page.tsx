@@ -126,10 +126,13 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-end justify-between">
                     <div>
-                      <div className="text-2xl font-bold text-content-primary">
-                        <AnimatedCounter value={area.score} />
+                      <div className="inline-flex items-baseline gap-0.5 px-2 py-0.5 rounded-xl bg-black/[0.04] dark:bg-white/[0.06]">
+                        <span className="text-3xl font-extrabold tracking-tighter text-content-primary">
+                          <AnimatedCounter value={area.score} />
+                        </span>
+                        <span className="text-sm font-semibold text-content-secondary">/100</span>
                       </div>
-                      <div className="text-micro uppercase tracking-wider text-content-secondary mt-0.5">{t('riskScore', language)}</div>
+                      <div className="text-micro uppercase tracking-wider text-content-secondary mt-1">{t('riskScore', language)}</div>
                     </div>
                     {area.top_concern !== 'None' && (
                       <div className="text-xs text-content-secondary text-right">

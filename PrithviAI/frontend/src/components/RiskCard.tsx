@@ -54,10 +54,12 @@ export default function RiskCard({ risk, expanded = false, index = 0 }: RiskCard
           </div>
         </div>
         <div className="text-right">
-          <span className={`text-2xl font-bold ${getRiskColor(level)}`}>
-            {Math.round(score)}
+          <span className="inline-flex flex-col items-center px-2.5 py-1 rounded-xl bg-black/[0.05] dark:bg-white/[0.07]">
+            <span className={`text-3xl font-extrabold tracking-tighter leading-none ${getRiskColor(level)}`}>
+              {Math.round(score)}
+            </span>
+            <span className="text-xs font-semibold text-content-secondary">/100</span>
           </span>
-          <span className="text-xs text-content-secondary block">/100</span>
         </div>
       </div>
 

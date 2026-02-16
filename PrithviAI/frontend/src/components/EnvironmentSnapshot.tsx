@@ -143,10 +143,15 @@ export default function EnvironmentSnapshot({ data, loading, language = 'en' }: 
                 {metric.label}
               </span>
             </div>
-            <div className={`text-xl font-bold ${metric.riskClass}`}>
-              {metric.value}{metric.suffix}
+            <div className="inline-flex items-baseline gap-0.5 px-2 py-0.5 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] mt-1">
+              <span className={`text-2xl font-bold tracking-tight ${metric.riskClass}`}>
+                {metric.value}
+              </span>
+              {metric.suffix && (
+                <span className="text-sm font-semibold text-content-primary/80">{metric.suffix}</span>
+              )}
             </div>
-            <div className="text-xs text-content-secondary mt-1">{metric.sub}</div>
+            <div className="text-xs text-content-secondary mt-1.5">{metric.sub}</div>
           </motion.div>
         ))}
       </div>

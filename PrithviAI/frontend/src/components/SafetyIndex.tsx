@@ -103,8 +103,10 @@ export default function SafetyIndexDisplay({ safetyIndex, loading, language = 'e
           </svg>
           {/* Center content */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className={`text-5xl font-bold ${getRiskColor(overall_level)}`}>
-              <AnimatedCounter value={overall_score} duration={1.5} />
+            <span className="inline-flex items-center justify-center px-3 py-1 rounded-2xl bg-black/[0.05] dark:bg-white/[0.08]">
+              <span className={`text-6xl font-extrabold tracking-tighter ${getRiskColor(overall_level)}`}>
+                <AnimatedCounter value={overall_score} duration={1.5} />
+              </span>
             </span>
             <motion.span
               initial={{ opacity: 0, scale: 0.9 }}
@@ -152,7 +154,7 @@ export default function SafetyIndexDisplay({ safetyIndex, loading, language = 'e
                     <p className="text-xs text-content-secondary mt-0.5">{risk.reason}</p>
                   </div>
                 </div>
-                <span className={`text-sm font-bold ${getRiskColor(risk.level)}`}>
+                <span className={`text-base font-extrabold tracking-tight ${getRiskColor(risk.level)}`}>
                   {Math.round(risk.score)}
                 </span>
               </motion.div>

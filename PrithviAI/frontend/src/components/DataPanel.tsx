@@ -33,9 +33,10 @@ function MetricCard({ icon, label, value, unit, color }: {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-micro uppercase tracking-wider text-content-secondary truncate">{label}</p>
-        <p className="text-sm font-semibold text-content-primary">
-          {value} <span className="text-xs font-normal text-content-secondary">{unit}</span>
-        </p>
+        <div className="inline-flex items-baseline gap-0.5 px-1.5 py-0.5 rounded-lg bg-black/[0.04] dark:bg-white/[0.06] mt-0.5">
+          <span className="text-base font-bold tracking-tight text-content-primary">{value}</span>
+          {unit && <span className="text-xs font-semibold text-content-primary/70">{unit}</span>}
+        </div>
       </div>
     </div>
   );
@@ -108,8 +109,11 @@ export default function DataPanel({ data, isLoading, error }: DataPanelProps) {
         <div className="mt-3">
           <div className="flex justify-between items-center mb-1">
             <span className="text-xs font-medium text-content-secondary">Safety Score</span>
-            <span className={`text-sm font-bold ${getRiskColor(level)}`}>
-              {Math.round(safety.overall_score)}/100
+            <span className="inline-flex items-baseline gap-0.5 px-2 py-0.5 rounded-lg bg-black/[0.04] dark:bg-white/[0.06]">
+              <span className={`text-lg font-extrabold tracking-tight ${getRiskColor(level)}`}>
+                {Math.round(safety.overall_score)}
+              </span>
+              <span className="text-xs font-semibold text-content-secondary">/100</span>
             </span>
           </div>
           <div className="w-full h-2 bg-surface-primary/60 rounded-full overflow-hidden">
@@ -168,8 +172,8 @@ export default function DataPanel({ data, isLoading, error }: DataPanelProps) {
                   <span className="text-sm font-semibold text-content-primary">
                     {risk.icon} {risk.name}
                   </span>
-                  <span className={`text-xs font-bold ${getRiskColor(risk.level)}`}>
-                    {risk.score}/100
+                  <span className={`text-sm font-extrabold tracking-tight ${getRiskColor(risk.level)}`}>
+                    {risk.score}<span className="text-xs font-semibold text-content-secondary">/100</span>
                   </span>
                 </div>
                 <p className="text-xs text-content-secondary">{risk.reason}</p>
