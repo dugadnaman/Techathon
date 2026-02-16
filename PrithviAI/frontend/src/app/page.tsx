@@ -377,16 +377,14 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════════ SAFETY INDEX + DAILY SUMMARY ═══════════════ */}
-      <section className="py-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <RevealSection className="lg:col-span-1">
+      <section className="py-3 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <RevealSection>
             <SafetyIndexDisplay safetyIndex={safetyIndex} loading={loading} language={language} />
           </RevealSection>
-          <div className="lg:col-span-2 space-y-5">
-            <RevealSection delay={0.05}>
-              <DailySummaryCard summary={dailySummary} loading={loading} language={language} />
-            </RevealSection>
-          </div>
+          <RevealSection delay={0.05}>
+            <DailySummaryCard summary={dailySummary} loading={loading} language={language} />
+          </RevealSection>
         </div>
       </section>
 

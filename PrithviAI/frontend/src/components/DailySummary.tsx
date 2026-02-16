@@ -5,8 +5,7 @@
  * Time-block advice with theme-aware styling.
  */
 
-import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { motion } from 'framer-motion';
 import { Sun, Sunset, Moon } from 'lucide-react';
 import type { DailySummary } from '@/types';
 import type { Language } from '@/types';
@@ -19,8 +18,7 @@ interface DailySummaryCardProps {
 }
 
 export default function DailySummaryCard({ summary, loading, language = 'en' }: DailySummaryCardProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: '-40px' });
+  /* Always visible — parent RevealSection handles scroll gate */
 
   if (loading) {
     return (
@@ -60,10 +58,10 @@ export default function DailySummaryCard({ summary, loading, language = 'en' }: 
   ];
 
   return (
-    <div ref={ref} className="glass-card-solid rounded-3xl p-6">
-      <div className="mb-5">
-        <h2 className="text-lg font-semibold text-content-primary">{t('dailySafetyGuide', language)}</h2>
-        <p className="text-sm text-content-secondary">{summary.location} — {summary.date}</p>
+    <div className="glass-card-solid rounded-3xl p-5">
+      <div className="mb-3">
+        <h2 className="text-base font-semibold text-content-primary">{t('dailySafetyGuide', language)}</h2>
+        <p className="text-xs text-content-secondary">{summary.location} — {summary.date}</p>
       </div>
 
       <div className="space-y-3">
@@ -71,7 +69,7 @@ export default function DailySummaryCard({ summary, loading, language = 'en' }: 
           <motion.div
             key={block.label}
             initial={{ opacity: 0, x: -20 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.1 + idx * 0.1, ease: [0.22, 1, 0.36, 1] }}
             className={`rounded-2xl border p-4 ${block.bg}`}
           >

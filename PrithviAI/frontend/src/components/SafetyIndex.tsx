@@ -44,8 +44,8 @@ export default function SafetyIndexDisplay({ safetyIndex, loading, language = 'e
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center p-12">
-        <div className="w-52 h-52 rounded-full border-4 border-surface-secondary animate-pulse" />
+      <div className="flex flex-col items-center justify-center p-8">
+        <div className="w-40 h-40 rounded-full border-4 border-surface-secondary animate-pulse" />
       </div>
     );
   }
@@ -58,28 +58,28 @@ export default function SafetyIndexDisplay({ safetyIndex, loading, language = 'e
   const progress = (overall_score / 100) * circumference;
 
   return (
-    <div ref={ref} className={`glass-card-solid rounded-3xl p-6 md:p-8 ${getRiskGradient(overall_level)}`}>
+    <div ref={ref} className={`glass-card-solid rounded-3xl p-5 md:p-6 ${getRiskGradient(overall_level)}`}>
       {/* Header */}
-      <div className="text-center mb-6">
-        <h2 className="text-lg font-semibold text-content-primary">
+      <div className="text-center mb-3">
+        <h2 className="text-base font-semibold text-content-primary">
           {t('seniorSafetyIndex', language)}
         </h2>
-        <p className="text-sm text-content-secondary mt-1">
+        <p className="text-xs text-content-secondary mt-0.5">
           {t('realtimeSafetyAssessment', language)}
         </p>
       </div>
 
       {/* Confidence Badge */}
       {safetyIndex.data_quality && (
-        <div className="mb-5">
+        <div className="mb-3">
           <DataConfidenceBadge dataQuality={safetyIndex.data_quality} />
         </div>
       )}
 
       {/* Animated Circular Gauge */}
-      <div className="flex justify-center mb-6">
-        <div className={`relative w-52 h-52 rounded-full ${getRiskGlow(overall_level)}`}>
-          <svg className="w-52 h-52 transform -rotate-90" viewBox="0 0 160 160">
+      <div className="flex justify-center mb-4">
+        <div className={`relative w-40 h-40 rounded-full ${getRiskGlow(overall_level)}`}>
+          <svg className="w-40 h-40 transform -rotate-90" viewBox="0 0 160 160">
             {/* Background ring */}
             <circle
               cx="80" cy="80" r="70"
@@ -104,7 +104,7 @@ export default function SafetyIndexDisplay({ safetyIndex, loading, language = 'e
           {/* Center content */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="inline-flex items-center justify-center px-3 py-1 rounded-2xl bg-black/[0.05] dark:bg-white/[0.08]">
-              <span className={`text-6xl font-extrabold tracking-tighter ${getRiskColor(overall_level)}`}>
+              <span className={`text-5xl font-extrabold tracking-tighter ${getRiskColor(overall_level)}`}>
                 <AnimatedCounter value={overall_score} duration={1.5} />
               </span>
             </span>
@@ -126,15 +126,15 @@ export default function SafetyIndexDisplay({ safetyIndex, loading, language = 'e
         initial={{ opacity: 0, y: 12 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.5, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="text-center mb-6"
+        className="text-center mb-4"
       >
-        <p className="text-body-lg text-content-secondary leading-relaxed">{summary}</p>
+        <p className="text-sm text-content-secondary leading-relaxed">{summary}</p>
       </motion.div>
 
       {/* Top Risks */}
       {top_risks.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-micro uppercase tracking-wider text-content-secondary mb-3">
+        <div className="mb-4">
+          <h3 className="text-micro uppercase tracking-wider text-content-secondary mb-2">
             {t('keyConcerns', language)}
           </h3>
           <div className="space-y-2">
@@ -144,7 +144,7 @@ export default function SafetyIndexDisplay({ safetyIndex, loading, language = 'e
                 initial={{ opacity: 0, x: -16 }}
                 animate={isInView ? { opacity: 1, x: 0 } : {}}
                 transition={{ duration: 0.4, delay: 0.8 + idx * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                className={`flex items-center justify-between p-3 rounded-2xl border border-white/10
+                className={`flex items-center justify-between p-2.5 rounded-xl border border-white/10
                   ${risk.level === 'HIGH' ? 'bg-risk-high/5' : risk.level === 'MODERATE' ? 'bg-risk-moderate/5' : 'bg-risk-low/5'}`}
               >
                 <div className="flex items-center gap-3">
