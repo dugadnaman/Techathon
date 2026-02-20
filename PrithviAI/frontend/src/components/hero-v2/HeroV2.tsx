@@ -11,7 +11,6 @@
  * 2 → AQI Glow Overlay
  * 3 → Atmospheric blur
  * 4 → Navbar + Hero Text
- * 5 → Glass Dashboard Preview
  */
 
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
@@ -19,7 +18,6 @@ import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import NavbarV2 from './NavbarV2';
 import GlowOverlay from './GlowOverlay';
-import GlassPreview from './GlassPreview';
 
 // Lazy load heavy canvas components
 const Starfield = dynamic(() => import('./Starfield'), { ssr: false });
@@ -216,8 +214,6 @@ export default function HeroV2({ aqi = 72 }: HeroV2Props) {
           </motion.div>
         </div>
 
-        {/* ═══ Z-5: Glass Dashboard Preview ═══ */}
-        <GlassPreview />
       </div>
 
       {/* Bottom gradient fade to page bg */}
