@@ -31,7 +31,13 @@
     "liveEnvironmentData": "লাইভ পরিবেশ ডেটা",
     "environmentalIntelligence": "পরিবেশগত বুদ্ধিমত্তা",
     "footer": "পৃথিবী — যাদের সবচেয়ে বেশি প্রয়োজন তাদের সুরক্ষার জন্য তৈরি।",
-    "disclaimer": "সরকারি ও সার্বজনিক API থেকে সংগৃহীত ডেটা। নির্দেশনা পরামর্শমূলক, পেশাদার চিকিৎসা পরামর্শের বিকল্প নয়।"
+    "disclaimer": "সরকারি ও সার্বজনিক API থেকে সংগৃহীত ডেটা। নির্দেশনা পরামর্শমূলক, পেশাদার চিকিৎসা পরামর্শের বিকল্প নয়।",
+    "backendUnavailable": "Unable to connect to backend. Please ensure the server is running.",
+    "connectionError": "Connection error. Please check your internet and try again.",
+    "errorLoadingData": "Error loading data",
+    "fetchingEnvironmentData": "Fetching environment data...",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "environment": {
     "temperature": "তাপমাত্রা",
@@ -42,7 +48,11 @@
     "rainfall": "বৃষ্টিপাত",
     "noise": "শব্দ মাত্রা",
     "wind": "বায়ু গতি",
-    "visibility": "দৃশ্যমানতা"
+    "visibility": "দৃশ্যমানতা",
+    "atGlance": "At a Glance",
+    "quickStatus": "Quick Status",
+    "outdoorActivityScore": "Outdoor Activity Score",
+    "comfortLevel": "Comfort Level"
   },
   "risk": {
     "low": "কম ঝুঁকি",
@@ -65,14 +75,55 @@
     "subtitle": "AI দ্বারা চালিত পরিবেশগত নিরাপত্তা",
     "welcome": "নমস্কার! আমি পৃথিবী, আপনার পরিবেশগত নিরাপত্তা সহায়ক। আজ আমি আপনাকে কিভাবে সাহায্য করতে পারি?",
     "placeholder": "বায়ুর মান, আবহাওয়া নিরাপত্তা, স্বাস্থ্য ঝুঁকি সম্পর্কে জিজ্ঞাসা করুন...",
-    "typeMessage": "একটি বার্তা লিখুন..."
+    "typeMessage": "একটি বার্তা লিখুন...",
+    "requestFailed": "Request failed. Please try again.",
+    "fallbackSuggestion1": "How is the air quality around me right now?",
+    "fallbackSuggestion2": "Is it safe for seniors to go for a walk this evening?",
+    "fallbackSuggestion3": "What precautions should I take today?",
+    "mapRequestFailed": "Could not fetch map insight. Please retry.",
+    "selectLocationToAsk": "Select a location on the map to ask targeted questions.",
+    "clearConversation": "Clear conversation",
+    "askAboutLocation": "Ask about this location",
+    "thisLocation": "This location",
+    "mapSuggestion1": "What is the biggest risk in this area right now?",
+    "mapSuggestion2": "Is it safe for seniors to walk here this evening?",
+    "mapSuggestion3": "How will AQI change over the next few hours?",
+    "mapSuggestion4": "What precautions are recommended right now?",
+    "askLocationPlaceholder": "Ask about this location..."
   },
   "daily": {
     "guide": "দৈনিক নিরাপত্তা গাইড",
     "morning": "সকাল",
     "afternoon": "দুপুর",
     "evening": "সন্ধ্যা",
-    "forecastAlerts": "পূর্বাভাস সতর্কতা"
+    "forecastAlerts": "পূর্বাভাস সতর্কতা",
+    "intelligenceTitle": "Daily Environmental Intelligence",
+    "analysisLoading": "Analyzing environment data...",
+    "quickAdvisory": "Quick Advisory",
+    "loadingRecommendations": "Loading recommendations...",
+    "riskTimeline24h": "24-Hour Risk Timeline",
+    "bestTimeOutside": "Best Time to Go Outside",
+    "recommendedForSeniors": "Recommended for senior citizens",
+    "primaryConcernToday": "Primary Concern Today",
+    "forecast48h": "48-Hour Forecast",
+    "forecastForSeniors": "Forecast for senior safety",
+    "timeLabel": "Time",
+    "noForecastData": "No forecast data available",
+    "limitOutdoorExposure": "Limit outdoor exposure",
+    "lowRiskExpected": "Low risk expected",
+    "moderatePrecautions": "Moderate precautions advised",
+    "peak": "Peak",
+    "riskWithLevel": "{level} risk",
+    "noLowRiskWindow": "No low-risk window detected",
+    "increased": "Increased",
+    "decreased": "Decreased",
+    "stable": "Stable",
+    "vsYesterday": "vs yesterday",
+    "hoursMorning": "6 AM to 12 PM",
+    "hoursAfternoon": "12 PM to 5 PM",
+    "hoursEvening": "5 PM to 9 PM",
+    "hoursNight": "9 PM to 6 AM",
+    "night": "Night"
   },
   "dashboard": {
     "title": "পরিবেশগত ড্যাশবোর্ড",
@@ -82,17 +133,66 @@
     "tempTrend": "তাপমাত্রা প্রবণতা",
     "riskBreakdown": "ঝুঁকি উপাদান বিভাজন",
     "safetyHistory": "নিরাপত্তা স্কোর ইতিহাস",
-    "footer": "লাইভ উৎস থেকে প্রতি ৫ মিনিটে ডেটা রিফ্রেশ হয়।"
+    "footer": "লাইভ উৎস থেকে প্রতি ৫ মিনিটে ডেটা রিফ্রেশ হয়।",
+    "aqiOverTime": "AQI Over Time",
+    "temperatureIn": "Temperature in {location}",
+    "currentContribution": "Current Contribution",
+    "recentRiskScore": "Recent risk score"
   },
   "explore": {
     "title": "মানচিত্র এক্সপ্লোরার",
     "clickToExplore": "পরিবেশগত ডেটা দেখতে মানচিত্রে ক্লিক করুন",
     "searchLocations": "অবস্থান অনুসন্ধান...",
     "data": "ডেটা",
-    "quick": "দ্রুত"
+    "quick": "দ্রুত",
+    "closeSidebar": "Close sidebar",
+    "openSidebar": "Open sidebar",
+    "failedLocationData": "Failed to load location data",
+    "loadingMap": "Loading map...",
+    "selectLocation": "Select location",
+    "selectLocationHint": "Tap a location on the map to load local insights"
   },
   "language": {
     "switcher": "ভাষা",
-    "select": "ভাষা নির্বাচন"
+    "select": "ভাষা নির্বাচন",
+    "groupPopular": "Popular",
+    "groupSouth": "South India",
+    "groupWestNorth": "West and North",
+    "groupEastNorthEast": "East and North-East",
+    "groupClassical": "Classical and Regional"
+  },
+  "units": {
+    "celsius": "°C",
+    "kmh": "km/h",
+    "millimeter": "mm",
+    "decibel": "dB",
+    "microgram": "µg/m³",
+    "kilometer": "km",
+    "percent": "%"
+  },
+  "aqi": {
+    "good": "Good",
+    "moderate": "Moderate",
+    "unhealthy": "Unhealthy",
+    "unhealthySensitive": "Unhealthy for Sensitive Groups",
+    "veryUnhealthy": "Very Unhealthy",
+    "hazardous": "Hazardous",
+    "severe": "Severe"
+  },
+  "status": {
+    "comfortable": "Comfortable",
+    "uncomfortableHydrate": "Uncomfortable, hydrate well",
+    "warmLimitOutdoor": "Warm, limit outdoor effort",
+    "coldDressWarm": "Cold, dress warmly",
+    "clear": "Clear",
+    "poor": "Poor",
+    "quiet": "Quiet",
+    "loud": "Loud",
+    "normal": "Normal",
+    "veryHigh": "Very High",
+    "heavy": "Heavy",
+    "light": "Light",
+    "none": "None",
+    "strong": "Strong"
   }
 }
