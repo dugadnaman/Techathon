@@ -9,10 +9,13 @@
  */
 
 import { useMemo } from 'react';
+import { useLocale } from 'next-intl';
 import { motion } from 'framer-motion';
 import { Clock, Sun, Shield, TrendingUp, TrendingDown, Minus, AlertTriangle } from 'lucide-react';
 import { RevealSection, StaggerContainer, StaggerItem } from '@/components/motion';
-import type { ForecastPoint, SafetyIndex, RiskLevel } from '@/types';
+import type { ForecastPoint, SafetyIndex, RiskLevel, Language } from '@/types';
+import { t, tFormat, tRisk } from '@/lib/translations';
+import { formatLocalizedNumber, formatTime } from '@/lib/utils';
 
 const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -42,15 +45,6 @@ function riskText(level: RiskLevel): string {
   }
 }
 
-function riskLabel(level: RiskLevel): string {
-  switch (level) {
-    case 'LOW': return 'Low';
-    case 'MODERATE': return 'Moderate';
-    case 'HIGH': return 'High';
-    default: return level;
-  }
-}
-
 interface TimeBlock {
   label: string;
   icon: string;
@@ -60,12 +54,12 @@ interface TimeBlock {
   isPeak: boolean;
 }
 
-function computeTimeBlocks(points: ForecastPoint[]): TimeBlock[] {
+function computeTimeBlocks(points: ForecastPoint[], language: Language): TimeBlock[] {
   const blocks: { label: string; icon: string; hours: string; range: [number, number] }[] = [
-    { label: 'Morning', icon: '🌅', hours: '6 AM – 12 PM', range: [6, 12] },
-    { label: 'Afternoon', icon: '☀️', hours: '12 PM – 5 PM', range: [12, 17] },
-    { label: 'Evening', icon: '🌆', hours: '5 PM – 9 PM', range: [17, 21] },
-    { label: 'Night', icon: '🌙', hours: '9 PM – 6 AM', range: [21, 30] },
+    { label: t('daily.morning', language), icon: '🌅', hours: t('daily.hoursMorning', language), range: [6, 12] },
+    { label: t('daily.afternoon', language), icon: '☀️', hours: t('daily.hoursAfternoon', language), range: [12, 17] },
+    { label: t('daily.evening', language), icon: '🌆', hours: t('daily.hoursEvening', language), range: [17, 21] },
+    { label: t('daily.night', language), icon: '🌙', hours: t('daily.hoursNight', language), range: [21, 30] },
   ];
 
   const result: TimeBlock[] = [];
@@ -120,7 +114,7 @@ interface BestWindow {
   advisory: string;
 }
 
-function computeBestWindow(points: ForecastPoint[]): BestWindow {
+function computeBestWindow(points: ForecastPoint[], language: Language): BestWindow {
   // Find longest consecutive LOW window during 5am-9pm
   const daytime = points.filter((p) => {
     const h = new Date(p.time).getHours();
@@ -128,7 +122,7 @@ function computeBestWindow(points: ForecastPoint[]): BestWindow {
   });
 
   if (daytime.length === 0) {
-    return { found: false, timeRange: '', level: 'HIGH', advisory: 'No forecast data available.' };
+    return { found: false, timeRange: '', level: 'HIGH', advisory: t('daily.noForecastData', language) };
   }
 
   let bestStart = -1;
@@ -172,7 +166,7 @@ function computeBestWindow(points: ForecastPoint[]): BestWindow {
       found: false,
       timeRange: '',
       level: 'HIGH',
-      advisory: 'No low-risk outdoor window today. Limit outdoor exposure.',
+      advisory: t('daily.limitOutdoorExposure', language),
     };
   }
 
@@ -180,7 +174,7 @@ function computeBestWindow(points: ForecastPoint[]): BestWindow {
   const endTime = new Date(daytime[Math.min(bestStart + bestLen - 1, daytime.length - 1)].time);
   endTime.setHours(endTime.getHours() + 1);
 
-  const fmt = (d: Date) => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  const fmt = (d: Date) => formatTime(d.toISOString(), language);
   const windowLevel = daytime[bestStart].predicted_level;
 
   return {
@@ -189,8 +183,8 @@ function computeBestWindow(points: ForecastPoint[]): BestWindow {
     level: windowLevel,
     advisory:
       windowLevel === 'LOW'
-        ? 'Low risk conditions expected. Safe for outdoor activities.'
-        : 'Moderate conditions. Take precautions if going out.',
+        ? t('daily.lowRiskExpected', language)
+        : t('daily.moderatePrecautions', language),
   };
 }
 
@@ -242,14 +236,14 @@ function computePrimaryConcern(
 
 // ─── Sub-components ──────────────────────────────────────
 
-function RiskTimeline({ blocks }: { blocks: TimeBlock[] }) {
+function RiskTimeline({ blocks, language }: { blocks: TimeBlock[]; language: Language }) {
   return (
     <div className="glass-card-solid rounded-2xl p-5">
       <div className="flex items-center gap-2 mb-4">
         <Clock size={16} className="text-accent" />
-        <h3 className="text-sm font-bold text-content-primary tracking-tight">24-Hour Risk Timeline</h3>
+        <h3 className="text-sm font-bold text-content-primary tracking-tight">{t('daily.riskTimeline24h', language)}</h3>
       </div>
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {blocks.map((block, i) => (
           <motion.div
             key={block.label}
@@ -264,7 +258,7 @@ function RiskTimeline({ blocks }: { blocks: TimeBlock[] }) {
           >
             {block.isPeak && (
               <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold bg-risk-high text-white px-2 py-0.5 rounded-full">
-                PEAK
+                {t('daily.peak', language)}
               </span>
             )}
             <div className="text-lg mb-1">{block.icon}</div>
@@ -279,7 +273,7 @@ function RiskTimeline({ blocks }: { blocks: TimeBlock[] }) {
               />
             </div>
             <div className={`text-xs font-bold ${riskText(block.level)}`}>
-              {riskLabel(block.level)}
+              {tRisk(block.level, language)}
             </div>
             <div className="text-[10px] text-content-secondary mt-0.5">{block.hours}</div>
           </motion.div>
@@ -289,18 +283,18 @@ function RiskTimeline({ blocks }: { blocks: TimeBlock[] }) {
   );
 }
 
-function BestTimeAdvisory({ window }: { window: BestWindow }) {
+function BestTimeAdvisory({ window, language }: { window: BestWindow; language: Language }) {
   return (
     <div className="glass-card-solid rounded-2xl p-5 flex flex-col justify-between h-full">
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Sun size={16} className="text-accent" />
-          <h3 className="text-sm font-bold text-content-primary tracking-tight">Best Time to Go Outside</h3>
+          <h3 className="text-sm font-bold text-content-primary tracking-tight">{t('daily.bestTimeOutside', language)}</h3>
         </div>
 
         {window.found ? (
           <>
-            <p className="text-xs text-content-secondary mb-2">Recommended for seniors:</p>
+            <p className="text-xs text-content-secondary mb-2">{t('daily.recommendedForSeniors', language)}</p>
             <div className="inline-flex items-baseline gap-1 px-3 py-1.5 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] mb-3">
               <span className="text-xl font-extrabold tracking-tight text-content-primary">
                 {window.timeRange}
@@ -309,7 +303,7 @@ function BestTimeAdvisory({ window }: { window: BestWindow }) {
             <div className="flex items-center gap-1.5 mb-2">
               <span className={`w-2 h-2 rounded-full ${riskColor(window.level)}`} />
               <span className={`text-xs font-bold ${riskText(window.level)}`}>
-                {riskLabel(window.level)} Risk
+                {tFormat('daily.riskWithLevel', { level: tRisk(window.level, language) }, language)}
               </span>
             </div>
           </>
@@ -317,7 +311,7 @@ function BestTimeAdvisory({ window }: { window: BestWindow }) {
           <div className="flex items-start gap-2 mb-3">
             <AlertTriangle size={16} className="text-risk-high mt-0.5 flex-shrink-0" />
             <p className="text-sm font-semibold text-risk-high">
-              No low-risk outdoor window today.
+              {t('daily.noLowRiskWindow', language)}
             </p>
           </div>
         )}
@@ -327,19 +321,19 @@ function BestTimeAdvisory({ window }: { window: BestWindow }) {
   );
 }
 
-function PrimaryConcernCard({ concern }: { concern: PrimaryConcern }) {
+function PrimaryConcernCard({ concern, language }: { concern: PrimaryConcern; language: Language }) {
   const TrendIcon = concern.trend === 'up' ? TrendingUp : concern.trend === 'down' ? TrendingDown : Minus;
   const trendColor =
     concern.trend === 'up' ? 'text-risk-high' : concern.trend === 'down' ? 'text-risk-low' : 'text-content-secondary';
   const trendLabel =
-    concern.trend === 'up' ? 'Increased' : concern.trend === 'down' ? 'Decreased' : 'Stable';
+    concern.trend === 'up' ? t('daily.increased', language) : concern.trend === 'down' ? t('daily.decreased', language) : t('daily.stable', language);
 
   return (
     <div className="glass-card-solid rounded-2xl p-5 flex flex-col justify-between h-full">
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Shield size={16} className="text-accent" />
-          <h3 className="text-sm font-bold text-content-primary tracking-tight">Primary Concern Today</h3>
+          <h3 className="text-sm font-bold text-content-primary tracking-tight">{t('daily.primaryConcernToday', language)}</h3>
         </div>
 
         <div className="flex items-center gap-3 mb-3">
@@ -349,9 +343,10 @@ function PrimaryConcernCard({ concern }: { concern: PrimaryConcern }) {
             <div className="flex items-center gap-1.5 mt-0.5">
               <TrendIcon size={13} className={trendColor} />
               <span className={`text-xs font-bold ${trendColor}`}>
-                {trendLabel}{concern.trendPercent > 0 ? ` ${concern.trendPercent}%` : ''}
+                {trendLabel}
+                {concern.trendPercent > 0 ? ` ${formatLocalizedNumber(concern.trendPercent, language, { maximumFractionDigits: 0 })}${t('units.percent', language)}` : ''}
               </span>
-              <span className="text-xs text-content-secondary">vs yesterday</span>
+              <span className="text-xs text-content-secondary">{t('daily.vsYesterday', language)}</span>
             </div>
           </div>
         </div>
@@ -374,8 +369,9 @@ export default function DailyIntelligenceSection({
   safetyIndex,
   previousScore,
 }: DailyIntelligenceSectionProps) {
-  const timeBlocks = useMemo(() => computeTimeBlocks(forecastPoints), [forecastPoints]);
-  const bestWindow = useMemo(() => computeBestWindow(forecastPoints), [forecastPoints]);
+  const locale = useLocale() as Language;
+  const timeBlocks = useMemo(() => computeTimeBlocks(forecastPoints, locale), [forecastPoints, locale]);
+  const bestWindow = useMemo(() => computeBestWindow(forecastPoints, locale), [forecastPoints, locale]);
   const primaryConcern = useMemo(() => computePrimaryConcern(safetyIndex, previousScore), [safetyIndex, previousScore]);
 
   if (forecastPoints.length === 0 && !safetyIndex) return null;
@@ -385,26 +381,26 @@ export default function DailyIntelligenceSection({
       <RevealSection>
         <div className="flex items-center gap-2 mb-4">
           <span className="w-1.5 h-6 rounded-full bg-accent" />
-          <h2 className="text-lg font-bold text-content-primary tracking-tight">Daily Intelligence</h2>
+          <h2 className="text-lg font-bold text-content-primary tracking-tight">{t('daily.intelligenceTitle', locale)}</h2>
         </div>
       </RevealSection>
 
       <StaggerContainer className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Timeline spans full width on mobile, 1 col on desktop */}
         <StaggerItem className="lg:col-span-3">
-          <RiskTimeline blocks={timeBlocks} />
+          <RiskTimeline blocks={timeBlocks} language={locale} />
         </StaggerItem>
 
         <StaggerItem>
-          <BestTimeAdvisory window={bestWindow} />
+          <BestTimeAdvisory window={bestWindow} language={locale} />
         </StaggerItem>
 
         <StaggerItem>
           {primaryConcern ? (
-            <PrimaryConcernCard concern={primaryConcern} />
+            <PrimaryConcernCard concern={primaryConcern} language={locale} />
           ) : (
             <div className="glass-card-solid rounded-2xl p-5 flex items-center justify-center h-full">
-              <p className="text-sm text-content-secondary">Analysis loading...</p>
+              <p className="text-sm text-content-secondary">{t('daily.analysisLoading', locale)}</p>
             </div>
           )}
         </StaggerItem>
@@ -415,7 +411,7 @@ export default function DailyIntelligenceSection({
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <AlertTriangle size={16} className="text-accent" />
-                <h3 className="text-sm font-bold text-content-primary tracking-tight">Quick Advisory</h3>
+                <h3 className="text-sm font-bold text-content-primary tracking-tight">{t('daily.quickAdvisory', locale)}</h3>
               </div>
               {safetyIndex ? (
                 <ul className="space-y-2">
@@ -433,7 +429,7 @@ export default function DailyIntelligenceSection({
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-content-secondary">Loading recommendations...</p>
+                <p className="text-xs text-content-secondary">{t('daily.loadingRecommendations', locale)}</p>
               )}
             </div>
           </div>

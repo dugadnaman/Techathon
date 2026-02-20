@@ -7,9 +7,11 @@
 
 import { motion } from 'framer-motion';
 import { Wind, Thermometer, Droplets, Sun, CloudRain, Volume2, Eye, Gauge } from 'lucide-react';
-import type { LocationData, RiskLevel } from '@/types';
+import type { Language, LocationData, RiskLevel } from '@/types';
 import { getRiskColor, getRiskBgColor, getRiskBadgeBg, getRiskHexColor, getRiskEmoji } from '@/lib/utils';
 import DataConfidenceBadge from '@/components/DataConfidenceBadge';
+import { t, tRisk } from '@/lib/translations';
+import { formatLocalizedNumber } from '@/lib/utils';
 
 const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -17,6 +19,7 @@ interface DataPanelProps {
   data: LocationData | null;
   isLoading: boolean;
   error: string | null;
+  language?: Language;
 }
 
 function MetricCard({ icon, label, value, unit, color }: {
@@ -42,13 +45,13 @@ function MetricCard({ icon, label, value, unit, color }: {
   );
 }
 
-export default function DataPanel({ data, isLoading, error }: DataPanelProps) {
+export default function DataPanel({ data, isLoading, error, language = 'en' }: DataPanelProps) {
   if (error) {
     return (
       <div className="h-full flex items-center justify-center p-6">
         <div className="text-center">
           <div className="text-4xl mb-3">⚠️</div>
-          <h3 className="text-sm font-semibold text-risk-high mb-1">Error Loading Data</h3>
+          <h3 className="text-sm font-semibold text-risk-high mb-1">{t('common.errorLoadingData', language)}</h3>
           <p className="text-xs text-content-secondary">{error}</p>
         </div>
       </div>
@@ -60,7 +63,7 @@ export default function DataPanel({ data, isLoading, error }: DataPanelProps) {
       <div className="h-full flex items-center justify-center p-6">
         <div className="text-center">
           <div className="w-10 h-10 border-3 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-content-secondary">Fetching environmental data...</p>
+          <p className="text-sm text-content-secondary">{t('common.fetchingEnvironmentData', language)}</p>
         </div>
       </div>
     );
@@ -71,9 +74,9 @@ export default function DataPanel({ data, isLoading, error }: DataPanelProps) {
       <div className="h-full flex items-center justify-center p-6">
         <div className="text-center">
           <div className="text-5xl mb-4">📍</div>
-          <h3 className="text-base font-semibold text-content-primary mb-2">Select a Location</h3>
+          <h3 className="text-base font-semibold text-content-primary mb-2">{t('explore.selectLocation', language)}</h3>
           <p className="text-sm text-content-secondary max-w-[220px]">
-            Click anywhere on the map or tap a marker to view real-time environmental data
+            {t('explore.selectLocationHint', language)}
           </p>
         </div>
       </div>
@@ -101,17 +104,17 @@ export default function DataPanel({ data, isLoading, error }: DataPanelProps) {
             </p>
           </div>
           <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-xs font-semibold ${getRiskBadgeBg(level)}`}>
-            {getRiskEmoji(level)} {level}
+            {getRiskEmoji(level)} {tRisk(level, language)}
           </span>
         </div>
 
         {/* Safety Score Bar */}
         <div className="mt-3">
           <div className="flex justify-between items-center mb-1">
-            <span className="text-xs font-medium text-content-secondary">Safety Score</span>
+            <span className="text-xs font-medium text-content-secondary">{t('riskScore', language)}</span>
             <span className="inline-flex items-baseline gap-0.5 px-2 py-0.5 rounded-lg bg-black/[0.04] dark:bg-white/[0.06]">
               <span className={`text-lg font-extrabold tracking-tight ${getRiskColor(level)}`}>
-                {Math.round(safety.overall_score)}
+                {formatLocalizedNumber(Math.round(safety.overall_score), language, { maximumFractionDigits: 0 })}
               </span>
               <span className="text-xs font-semibold text-content-secondary">/100</span>
             </span>
@@ -137,19 +140,19 @@ export default function DataPanel({ data, isLoading, error }: DataPanelProps) {
       {/* Environmental Metrics Grid */}
       <div className="p-4">
         <h3 className="text-micro font-semibold text-content-secondary uppercase tracking-wider mb-3">
-          Environmental Data
+          {t('liveEnvironmentData', language)}
         </h3>
         <div className="grid grid-cols-2 gap-2">
-          <MetricCard icon={<Thermometer size={16} />} label="Temperature" value={env.temperature?.toFixed(1) ?? '--'} unit="°C" color="bg-red-500/10 text-red-500" />
-          <MetricCard icon={<Thermometer size={16} />} label="Feels Like" value={env.feels_like?.toFixed(1) ?? '--'} unit="°C" color="bg-orange-500/10 text-orange-500" />
-          <MetricCard icon={<Wind size={16} />} label="AQI" value={env.aqi ?? '--'} unit="" color="bg-purple-500/10 text-purple-500" />
-          <MetricCard icon={<Gauge size={16} />} label="PM2.5" value={env.pm25?.toFixed(0) ?? '--'} unit="µg/m³" color="bg-violet-500/10 text-violet-500" />
-          <MetricCard icon={<Droplets size={16} />} label="Humidity" value={env.humidity?.toFixed(0) ?? '--'} unit="%" color="bg-blue-500/10 text-blue-500" />
-          <MetricCard icon={<Wind size={16} />} label="Wind" value={env.wind_speed?.toFixed(1) ?? '--'} unit="m/s" color="bg-teal-500/10 text-teal-500" />
-          <MetricCard icon={<Sun size={16} />} label="UV Index" value={env.uv_index?.toFixed(1) ?? '--'} unit="" color="bg-yellow-500/10 text-yellow-500" />
-          <MetricCard icon={<CloudRain size={16} />} label="Rainfall" value={env.rainfall?.toFixed(1) ?? '--'} unit="mm/hr" color="bg-sky-500/10 text-sky-500" />
-          <MetricCard icon={<Volume2 size={16} />} label="Noise" value={env.noise_db?.toFixed(0) ?? '--'} unit="dB" color="bg-pink-500/10 text-pink-500" />
-          <MetricCard icon={<Eye size={16} />} label="Visibility" value={env.visibility ? (env.visibility / 1000).toFixed(1) : '--'} unit="km" color="bg-emerald-500/10 text-emerald-500" />
+          <MetricCard icon={<Thermometer size={16} />} label={t('temperature', language)} value={env.temperature != null ? formatLocalizedNumber(env.temperature, language, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '--'} unit={t('units.celsius', language)} color="bg-red-500/10 text-red-500" />
+          <MetricCard icon={<Thermometer size={16} />} label={t('feelsLike', language)} value={env.feels_like != null ? formatLocalizedNumber(env.feels_like, language, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '--'} unit={t('units.celsius', language)} color="bg-orange-500/10 text-orange-500" />
+          <MetricCard icon={<Wind size={16} />} label={t('environment.aqi', language)} value={env.aqi != null ? formatLocalizedNumber(env.aqi, language, { maximumFractionDigits: 0 }) : '--'} unit="" color="bg-purple-500/10 text-purple-500" />
+          <MetricCard icon={<Gauge size={16} />} label="PM2.5" value={env.pm25 != null ? formatLocalizedNumber(env.pm25, language, { maximumFractionDigits: 0 }) : '--'} unit={t('units.microgram', language)} color="bg-violet-500/10 text-violet-500" />
+          <MetricCard icon={<Droplets size={16} />} label={t('humidity', language)} value={env.humidity != null ? formatLocalizedNumber(env.humidity, language, { maximumFractionDigits: 0 }) : '--'} unit={t('units.percent', language)} color="bg-blue-500/10 text-blue-500" />
+          <MetricCard icon={<Wind size={16} />} label={t('wind', language)} value={env.wind_speed != null ? formatLocalizedNumber(env.wind_speed * 3.6, language, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '--'} unit={t('units.kmh', language)} color="bg-teal-500/10 text-teal-500" />
+          <MetricCard icon={<Sun size={16} />} label={t('uvIndex', language)} value={env.uv_index != null ? formatLocalizedNumber(env.uv_index, language, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '--'} unit="" color="bg-yellow-500/10 text-yellow-500" />
+          <MetricCard icon={<CloudRain size={16} />} label={t('rainfall', language)} value={env.rainfall != null ? formatLocalizedNumber(env.rainfall, language, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '--'} unit={t('units.millimeter', language)} color="bg-sky-500/10 text-sky-500" />
+          <MetricCard icon={<Volume2 size={16} />} label={t('noise', language)} value={env.noise_db != null ? formatLocalizedNumber(env.noise_db, language, { maximumFractionDigits: 0 }) : '--'} unit={t('units.decibel', language)} color="bg-pink-500/10 text-pink-500" />
+          <MetricCard icon={<Eye size={16} />} label={t('visibility', language)} value={env.visibility ? formatLocalizedNumber(env.visibility / 1000, language, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '--'} unit={t('units.kilometer', language)} color="bg-emerald-500/10 text-emerald-500" />
         </div>
       </div>
 
@@ -157,7 +160,7 @@ export default function DataPanel({ data, isLoading, error }: DataPanelProps) {
       {safety.top_risks && safety.top_risks.length > 0 && (
         <div className="px-4 pb-4">
           <h3 className="text-micro font-semibold text-content-secondary uppercase tracking-wider mb-3">
-            Top Risk Factors
+            {t('riskFactorBreakdown', language)}
           </h3>
           <div className="space-y-2">
             {safety.top_risks.map((risk: any, i: number) => (
@@ -188,7 +191,7 @@ export default function DataPanel({ data, isLoading, error }: DataPanelProps) {
       {safety.summary && (
         <div className="px-4 pb-4">
           <h3 className="text-micro font-semibold text-content-secondary uppercase tracking-wider mb-2">
-            Assessment
+            {t('safety.assessment', language)}
           </h3>
           <p className="text-sm text-content-secondary leading-relaxed bg-surface-secondary/50 p-3 rounded-2xl">
             {safety.summary}

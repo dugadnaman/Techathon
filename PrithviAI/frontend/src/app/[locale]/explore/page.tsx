@@ -25,7 +25,6 @@ const InteractiveMap = dynamic(() => import('@/components/InteractiveMap'), {
     <div className="w-full h-full flex items-center justify-center bg-surface-secondary rounded-2xl">
       <div className="text-center">
         <Loader2 className="w-8 h-8 text-accent animate-spin mx-auto mb-2" />
-        <p className="text-sm text-content-secondary">Loading map...</p>
       </div>
     </div>
   ),
@@ -81,7 +80,7 @@ export default function MapExplorerPage() {
           }));
         }
       } catch (err: any) {
-        setDataError(err.message || 'Failed to load data for this location');
+        setDataError(err.message || t('failedLocationData', language));
         setLocationData(null);
       } finally {
         setIsLoadingData(false);
@@ -167,11 +166,11 @@ export default function MapExplorerPage() {
 
       {/* Main Content */}
       <div className="max-w-[1920px] mx-auto p-4">
-        <div className="flex gap-4 h-[calc(100vh-10rem)]">
+        <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 lg:h-[calc(100vh-10rem)]">
           {/* Map Area */}
           <motion.div
             layout
-            className="flex-1"
+            className="flex-1 min-h-[360px] h-[58vh] sm:h-[62vh] lg:h-auto"
             transition={{ duration: 0.4, ease: EASE_OUT }}
           >
             <InteractiveMap
@@ -185,11 +184,10 @@ export default function MapExplorerPage() {
 
           {/* Sidebar Toggle */}
           <motion.button
-            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="self-center p-2.5 glass-card-solid rounded-2xl shadow-elevated z-10 text-content-secondary hover:text-content-primary transition-colors"
-            aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+            className="self-end lg:self-center p-2.5 min-h-[44px] min-w-[44px] glass-card-solid rounded-2xl shadow-elevated z-10 text-content-secondary transition-colors"
+            aria-label={sidebarOpen ? t('closeSidebar', language) : t('openSidebar', language)}
           >
             {sidebarOpen ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </motion.button>
@@ -198,20 +196,20 @@ export default function MapExplorerPage() {
           <AnimatePresence>
             {sidebarOpen && (
               <motion.div
-                initial={{ width: 0, opacity: 0 }}
-                animate={{ width: 420, opacity: 1 }}
-                exit={{ width: 0, opacity: 0 }}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
                 transition={{ duration: 0.4, ease: EASE_OUT }}
-                className="shrink-0 glass-card-solid rounded-3xl border border-surface-secondary shadow-elevated flex flex-col overflow-hidden"
+                className="w-full lg:w-[420px] shrink-0 glass-card-solid rounded-3xl border border-surface-secondary shadow-elevated flex flex-col overflow-hidden"
               >
                 {/* Tabs */}
                 <div className="flex border-b border-surface-secondary">
                   <button
                     onClick={() => setSidebarTab('data')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-medium transition-all ${
+                    className={`flex-1 min-h-[44px] flex items-center justify-center gap-2 py-3 text-sm font-medium transition-all ${
                       sidebarTab === 'data'
                         ? 'text-accent bg-accent/5 border-b-2 border-accent'
-                        : 'text-content-secondary hover:text-content-primary hover:bg-surface-secondary/50'
+                        : 'text-content-secondary'
                     }`}
                   >
                     <Database size={15} />
@@ -219,10 +217,10 @@ export default function MapExplorerPage() {
                   </button>
                   <button
                     onClick={() => setSidebarTab('chat')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-medium transition-all ${
+                    className={`flex-1 min-h-[44px] flex items-center justify-center gap-2 py-3 text-sm font-medium transition-all ${
                       sidebarTab === 'chat'
                         ? 'text-accent bg-accent/5 border-b-2 border-accent'
-                        : 'text-content-secondary hover:text-content-primary hover:bg-surface-secondary/50'
+                        : 'text-content-secondary'
                     }`}
                   >
                     <MessageSquare size={15} />
@@ -233,7 +231,7 @@ export default function MapExplorerPage() {
                 {/* Tab Content */}
                 <div className="flex-1 overflow-hidden">
                   {sidebarTab === 'data' ? (
-                    <DataPanel data={locationData} isLoading={isLoadingData} error={dataError} />
+                    <DataPanel data={locationData} isLoading={isLoadingData} error={dataError} language={language} />
                   ) : (
                     <MapChatBox selectedLocation={selectedLocation} />
                   )}
@@ -254,13 +252,12 @@ export default function MapExplorerPage() {
             return (
               <motion.button
                 key={lm.name}
-                whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => handleLocationSelect(lm.lat, lm.lon, lm.name)}
-                className={`shrink-0 px-4 py-2 text-xs rounded-full border transition-all ${
+                className={`shrink-0 min-h-[44px] px-4 py-2 text-xs rounded-full border transition-all ${
                   isActive
                     ? 'bg-accent text-white border-accent shadow-glow-green'
-                    : 'glass-card-solid text-content-secondary border-surface-secondary hover:border-accent/40 hover:text-accent'
+                    : 'glass-card-solid text-content-secondary border-surface-secondary'
                 }`}
               >
                 {riskLevel && (

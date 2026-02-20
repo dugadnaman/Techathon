@@ -7,28 +7,32 @@
 
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
+import { useLocale } from 'next-intl';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import type { ForecastPoint } from '@/types';
-import { formatTime } from '@/lib/utils';
+import type { ForecastPoint, Language } from '@/types';
+import { formatLocalizedNumber, formatTime } from '@/lib/utils';
+import { t, tRisk } from '@/lib/translations';
 
 interface ForecastChartProps {
   points: ForecastPoint[];
+  language?: Language;
 }
 
-export default function ForecastChart({ points }: ForecastChartProps) {
+export default function ForecastChart({ points, language }: ForecastChartProps) {
+  const locale = (useLocale() as Language) || language || 'en';
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-40px' });
 
   if (!points || points.length === 0) {
     return (
       <div className="glass-card-solid rounded-3xl p-6">
-        <p className="text-content-secondary text-center">No forecast data available</p>
+        <p className="text-content-secondary text-center">{t('daily.noForecastData', locale)}</p>
       </div>
     );
   }
 
   const chartData = points.map((p) => ({
-    time: formatTime(p.time),
+    time: formatTime(p.time, locale),
     score: p.predicted_score,
     level: p.predicted_level,
     concern: p.key_concern,
@@ -42,8 +46,8 @@ export default function ForecastChart({ points }: ForecastChartProps) {
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       className="glass-card-solid rounded-3xl p-6"
     >
-      <h3 className="text-lg font-semibold text-content-primary mb-1">48-Hour Safety Forecast</h3>
-      <p className="text-sm text-content-secondary mb-4">Predicted environmental risk for seniors</p>
+      <h3 className="text-lg font-semibold text-content-primary mb-1">{t('daily.forecast48h', locale)}</h3>
+      <p className="text-sm text-content-secondary mb-4">{t('daily.forecastForSeniors', locale)}</p>
 
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
@@ -76,10 +80,10 @@ export default function ForecastChart({ points }: ForecastChartProps) {
                 color: 'var(--text-primary)',
               }}
               formatter={(value: number) => [
-                `${Math.round(value)}/100`,
-                'Risk Score',
+                `${formatLocalizedNumber(Math.round(value), locale, { maximumFractionDigits: 0 })}/100`,
+                t('riskScore', locale),
               ]}
-              labelFormatter={(label) => `Time: ${label}`}
+              labelFormatter={(label) => `${t('daily.timeLabel', locale)}: ${label}`}
             />
             <Area
               type="monotone"
@@ -97,15 +101,15 @@ export default function ForecastChart({ points }: ForecastChartProps) {
       <div className="flex items-center justify-center gap-6 mt-4 text-xs text-content-secondary">
         <div className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-risk-low" />
-          <span>Low (0-30)</span>
+          <span>{tRisk('LOW', locale)} (0-30)</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-risk-moderate" />
-          <span>Moderate (30-60)</span>
+          <span>{tRisk('MODERATE', locale)} (30-60)</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-risk-high" />
-          <span>High (60-100)</span>
+          <span>{tRisk('HIGH', locale)} (60-100)</span>
         </div>
       </div>
     </motion.div>

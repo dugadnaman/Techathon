@@ -7,8 +7,10 @@
 
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
-import type { RiskFactor } from '@/types';
+import { useLocale } from 'next-intl';
+import type { Language, RiskFactor } from '@/types';
 import { getRiskColor } from '@/lib/utils';
+import { tRisk } from '@/lib/translations';
 
 interface RiskCardProps {
   risk: RiskFactor;
@@ -17,6 +19,7 @@ interface RiskCardProps {
 }
 
 export default function RiskCard({ risk, expanded = false, index = 0 }: RiskCardProps) {
+  const language = useLocale() as Language;
   const { name, level, score, reason, recommendation, icon } = risk;
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-40px' });
@@ -41,7 +44,6 @@ export default function RiskCard({ risk, expanded = false, index = 0 }: RiskCard
       initial={{ opacity: 0, scale: 0.96 }}
       animate={isInView ? { opacity: 1, scale: 1 } : {}}
       transition={{ duration: 0.5, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ scale: 1.02, y: -2 }}
       whileTap={{ scale: 0.98 }}
       className={`rounded-2xl border p-5 cursor-default hover:shadow-elevated transition-shadow duration-200 ${riskBg}`}
     >
@@ -51,7 +53,7 @@ export default function RiskCard({ risk, expanded = false, index = 0 }: RiskCard
           <div>
             <h3 className="font-semibold text-content-primary">{name}</h3>
             <span className={`inline-block text-xs font-bold px-2.5 py-0.5 rounded-full text-white mt-1 ${barColor}`}>
-              {level}
+              {tRisk(level, language)}
             </span>
           </div>
         </div>

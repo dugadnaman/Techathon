@@ -3,7 +3,7 @@
 /**
  * PrithviAI — Cinematic Hero V2
  * Premium dark hero with rotating Earth, AQI-reactive glow,
- * elegant typography, and glass dashboard preview.
+ * elegant typography, and mobile-first CTA flow.
  *
  * Z-INDEX LAYERS:
  * 0 → Starfield
@@ -13,11 +13,15 @@
  * 4 → Navbar + Hero Text
  */
 
-import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
+import { useLocale } from 'next-intl';
 import NavbarV2 from './NavbarV2';
 import GlowOverlay from './GlowOverlay';
+import { t } from '@/lib/translations';
+import { formatLocalizedNumber } from '@/lib/utils';
+import type { Language } from '@/types';
 
 // Lazy load heavy canvas components
 const Starfield = dynamic(() => import('./Starfield'), { ssr: false });
@@ -31,11 +35,27 @@ interface HeroV2Props {
 }
 
 export default function HeroV2({ aqi = 72 }: HeroV2Props) {
+  const locale = useLocale() as Language;
   const [currentAqi, setCurrentAqi] = useState(aqi);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     setCurrentAqi(aqi);
   }, [aqi]);
+
+  useEffect(() => {
+    const updateViewport = () => setIsMobile(window.innerWidth < 640);
+    updateViewport();
+    window.addEventListener('resize', updateViewport, { passive: true });
+    return () => window.removeEventListener('resize', updateViewport);
+  }, []);
+
+  const aqiLabel = useMemo(() => {
+    if (currentAqi <= 50) return t('aqi.good', locale);
+    if (currentAqi <= 100) return t('aqi.moderate', locale);
+    if (currentAqi <= 200) return t('aqi.unhealthy', locale);
+    return t('aqi.severe', locale);
+  }, [currentAqi, locale]);
 
   return (
     <section
@@ -46,12 +66,15 @@ export default function HeroV2({ aqi = 72 }: HeroV2Props) {
       }}
     >
       {/* ═══ Z-0: Starfield ═══ */}
-      <Starfield />
+      {!isMobile && <Starfield />}
 
       {/* ═══ Z-1: Rotating Earth ═══ */}
       <div
         className="absolute inset-0 flex items-center justify-center"
-        style={{ zIndex: 1, transform: 'scale(1.2) translateY(8%)' }}
+        style={{
+          zIndex: 1,
+          transform: isMobile ? 'scale(1.02) translateY(10%)' : 'scale(1.14) translateY(8%)',
+        }}
       >
         <EarthBackground />
       </div>
@@ -64,13 +87,13 @@ export default function HeroV2({ aqi = 72 }: HeroV2Props) {
         className="absolute pointer-events-none"
         style={{
           zIndex: 3,
-          top: 200,
+          top: isMobile ? 140 : 200,
           left: '50%',
           transform: 'translateX(-50%)',
-          width: 900,
-          height: 500,
-          background: 'radial-gradient(ellipse at center, rgba(20,184,166,0.12) 0%, transparent 70%)',
-          filter: 'blur(80px)',
+          width: isMobile ? 420 : 900,
+          height: isMobile ? 280 : 500,
+          background: 'radial-gradient(ellipse at center, rgba(20,184,166,0.08) 0%, transparent 72%)',
+          filter: `blur(${isMobile ? 56 : 80}px)`,
         }}
         aria-hidden="true"
       />
@@ -82,8 +105,8 @@ export default function HeroV2({ aqi = 72 }: HeroV2Props) {
 
         {/* Hero Content */}
         <div
-          className="flex flex-col items-center text-center mx-auto px-6"
-          style={{ maxWidth: 900, marginTop: 100 }}
+          className="flex flex-col items-center text-center mx-auto px-4 sm:px-6"
+          style={{ maxWidth: 900, marginTop: isMobile ? 56 : 92 }}
         >
           {/* Heading */}
           <motion.div
@@ -95,8 +118,8 @@ export default function HeroV2({ aqi = 72 }: HeroV2Props) {
               className="text-white font-bold"
               style={{
                 fontFamily: 'Inter, sans-serif',
-                fontSize: 'clamp(42px, 6vw, 76px)',
-                letterSpacing: '-2px',
+                fontSize: 'clamp(34px, 12vw, 76px)',
+                letterSpacing: '-0.04em',
                 lineHeight: 1.1,
               }}
             >
@@ -114,13 +137,13 @@ export default function HeroV2({ aqi = 72 }: HeroV2Props) {
               style={{
                 fontFamily: "'Instrument Serif', 'Georgia', serif",
                 fontStyle: 'italic',
-                fontSize: 'clamp(32px, 5vw, 76px)',
-                letterSpacing: '-2px',
-                lineHeight: 1.1,
+                fontSize: 'clamp(24px, 9vw, 62px)',
+                letterSpacing: '-0.04em',
+                lineHeight: 1.12,
                 fontWeight: 400,
               }}
             >
-              Environmental intelligence for real life.
+              {t('hero.subtitle', locale)}
             </h2>
           </motion.div>
 
@@ -132,14 +155,13 @@ export default function HeroV2({ aqi = 72 }: HeroV2Props) {
             className="mt-6"
             style={{
               fontFamily: "'Manrope', sans-serif",
-              fontSize: 18,
-              lineHeight: '26px',
+              fontSize: isMobile ? 15 : 18,
+              lineHeight: isMobile ? '22px' : '26px',
               color: 'rgba(255, 255, 255, 0.85)',
-              maxWidth: 650,
+              maxWidth: isMobile ? 340 : 650,
             }}
           >
-            Real-time environmental risk analysis, predictive safety insights,
-            and voice-powered guidance — built for the people who need it most.
+            {t('hero.description', locale)}
           </motion.p>
 
           {/* CTA Buttons */}
@@ -147,16 +169,15 @@ export default function HeroV2({ aqi = 72 }: HeroV2Props) {
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.4, ease: EASE_OUT }}
-            className="flex flex-col sm:flex-row items-center mt-8"
+            className="flex flex-col sm:flex-row items-stretch sm:items-center mt-7 w-full sm:w-auto"
             style={{ gap: 22 }}
           >
             {/* Primary */}
             <motion.a
               href="#environment-data"
-              whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-              className="inline-flex items-center justify-center text-white font-medium text-sm"
+              className="inline-flex min-h-[44px] items-center justify-center text-white font-medium text-sm w-full sm:w-auto"
               style={{
                 fontFamily: "'Manrope', sans-serif",
                 background: '#14B8A6',
@@ -165,16 +186,15 @@ export default function HeroV2({ aqi = 72 }: HeroV2Props) {
                 boxShadow: '0 0 30px rgba(20, 184, 166, 0.3)',
               }}
             >
-              Check My Area
+              {t('hero.checkMyArea', locale)}
             </motion.a>
 
             {/* Secondary */}
             <motion.a
               href="/chat"
-              whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-              className="inline-flex items-center justify-center text-white font-medium text-sm"
+              className="inline-flex min-h-[44px] items-center justify-center text-white font-medium text-sm w-full sm:w-auto"
               style={{
                 fontFamily: "'Manrope', sans-serif",
                 background: 'rgba(255, 255, 255, 0.08)',
@@ -183,7 +203,7 @@ export default function HeroV2({ aqi = 72 }: HeroV2Props) {
                 borderRadius: 10,
               }}
             >
-              Use Voice Assistant
+              {t('hero.voiceAssistant', locale)}
             </motion.a>
           </motion.div>
 
@@ -209,7 +229,7 @@ export default function HeroV2({ aqi = 72 }: HeroV2Props) {
               className="text-white/70 text-xs"
               style={{ fontFamily: "'Manrope', sans-serif" }}
             >
-              AQI {currentAqi} · {currentAqi <= 50 ? 'Good' : currentAqi <= 100 ? 'Moderate' : currentAqi <= 200 ? 'Unhealthy' : 'Severe'}
+              {t('environment.aqi', locale)} {formatLocalizedNumber(currentAqi, locale, { maximumFractionDigits: 0 })} · {aqiLabel}
             </span>
           </motion.div>
         </div>

@@ -32,14 +32,14 @@ export default function ChatPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: EASE_OUT }}
-          className="flex flex-wrap items-center gap-3 mb-4"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-4"
         >
-          <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-3 py-2">
+          <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-3 py-2 min-h-[44px]">
             <MapPin size={14} className="text-accent" />
             <select
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="text-sm text-content-primary bg-transparent outline-none cursor-pointer"
+              className="text-sm text-content-primary bg-transparent outline-none cursor-pointer w-full"
             >
               <option value="Pune">Pune</option>
               <option value="Mumbai">Mumbai</option>
@@ -49,12 +49,12 @@ export default function ChatPage() {
             </select>
           </div>
 
-          <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-3 py-2">
+          <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-3 py-2 min-h-[44px]">
             <UserCircle size={14} className="text-accent" />
             <select
               value={ageGroup}
               onChange={(e) => setAgeGroup(e.target.value as AgeGroup)}
-              className="text-sm text-content-primary bg-transparent outline-none cursor-pointer"
+              className="text-sm text-content-primary bg-transparent outline-none cursor-pointer w-full"
             >
               <option value="elderly">{t('seniorCitizen', language)}</option>
               <option value="adult">{t('adult', language)}</option>

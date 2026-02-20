@@ -2,7 +2,38 @@
  * PrithviAI — Utility Functions
  */
 
-import type { RiskLevel } from '@/types';
+import type { Language, RiskLevel } from '@/types';
+
+const LOCALE_MAP: Record<string, string> = {
+  en: 'en-IN',
+  hi: 'hi-IN',
+  mr: 'mr-IN',
+  bn: 'bn-IN',
+  ta: 'ta-IN',
+  te: 'te-IN',
+  kn: 'kn-IN',
+  ml: 'ml-IN',
+  gu: 'gu-IN',
+  pa: 'pa-IN',
+  or: 'or-IN',
+  as: 'as-IN',
+  ur: 'ur-IN',
+  gom: 'kok-IN',
+  mni: 'mni-IN',
+  brx: 'brx-IN',
+  sa: 'sa-IN',
+  ne: 'ne-IN',
+  mai: 'mai-IN',
+  sat: 'sat-IN',
+  doi: 'doi-IN',
+};
+
+/**
+ * Resolve app language code to a valid Intl locale while keeping western digits.
+ */
+export function toIntlLocale(code: Language | string = 'en'): string {
+  return `${LOCALE_MAP[code] || 'en-IN'}-u-nu-latn`;
+}
 
 /** Get color class for risk level */
 export function getRiskColor(level: RiskLevel): string {
@@ -60,8 +91,8 @@ export function formatScore(score: number): string {
 }
 
 /** Format timestamp to human-readable */
-export function formatTime(timestamp: string): string {
-  return new Date(timestamp).toLocaleTimeString('en-IN', {
+export function formatTime(timestamp: string, language: Language = 'en'): string {
+  return new Date(timestamp).toLocaleTimeString(toIntlLocale(language), {
     hour: '2-digit',
     minute: '2-digit',
     hour12: true,
@@ -69,13 +100,23 @@ export function formatTime(timestamp: string): string {
 }
 
 /** Format date to human-readable */
-export function formatDate(timestamp: string): string {
-  return new Date(timestamp).toLocaleDateString('en-IN', {
+export function formatDate(timestamp: string, language: Language = 'en'): string {
+  return new Date(timestamp).toLocaleDateString(toIntlLocale(language), {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
+}
+
+/** Locale-aware numeric formatting with western digits (0-9). */
+export function formatLocalizedNumber(
+  value: number,
+  language: Language = 'en',
+  options: Intl.NumberFormatOptions = {},
+): string {
+  if (!Number.isFinite(value)) return '--';
+  return new Intl.NumberFormat(toIntlLocale(language), options).format(value);
 }
 
 /** Language display names */

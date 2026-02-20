@@ -20,6 +20,7 @@ import {
 } from 'recharts';
 import { Building2, TrendingUp, PieChart as PieIcon, MapPin, Clock } from 'lucide-react';
 import { t, tRisk } from '@/lib/translations';
+import { formatLocalizedNumber } from '@/lib/utils';
 
 const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -162,7 +163,7 @@ export default function DashboardPage() {
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
           <ChartCard
             title={t('aqiTrend', language)}
-            subtitle="AQI over time"
+            subtitle={t('dashboard.aqiOverTime', language)}
             icon={<TrendingUp size={18} className="text-blue-400" />}
           >
             <ResponsiveContainer width="100%" height="100%">
@@ -176,7 +177,7 @@ export default function DashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--bg-secondary)" />
                 <XAxis dataKey="timestamp" tick={false} axisLine={{ stroke: 'var(--bg-secondary)' }} />
                 <YAxis tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(val: number) => [`AQI: ${val}`, 'Air Quality']} labelFormatter={() => ''} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(val: number) => [`${t('environment.aqi', language)}: ${formatLocalizedNumber(val, language, { maximumFractionDigits: 0 })}`, t('airQuality', language)]} labelFormatter={() => ''} />
                 <Area type="monotone" dataKey="aqi" stroke="#3b82f6" strokeWidth={2} fill="url(#aqiGrad)" animationDuration={1500} />
               </AreaChart>
             </ResponsiveContainer>
@@ -184,7 +185,7 @@ export default function DashboardPage() {
 
           <ChartCard
             title={t('tempTrend', language)}
-            subtitle="Temperature in °C"
+            subtitle={t('dashboard.temperatureIn', language)}
             icon={<TrendingUp size={18} className="text-red-400" />}
           >
             <ResponsiveContainer width="100%" height="100%">
@@ -198,7 +199,7 @@ export default function DashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--bg-secondary)" />
                 <XAxis dataKey="timestamp" tick={false} axisLine={{ stroke: 'var(--bg-secondary)' }} />
                 <YAxis tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(val: number) => [`${val}°C`, 'Temperature']} labelFormatter={() => ''} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(val: number) => [`${formatLocalizedNumber(val, language, { maximumFractionDigits: 1 })}${t('units.celsius', language)}`, t('temperature', language)]} labelFormatter={() => ''} />
                 <Area type="monotone" dataKey="temperature" stroke="#ef4444" strokeWidth={2} fill="url(#tempGrad)" animationDuration={1500} />
               </AreaChart>
             </ResponsiveContainer>
@@ -206,7 +207,7 @@ export default function DashboardPage() {
 
           <ChartCard
             title={t('riskFactorBreakdown', language)}
-            subtitle="Current contribution by factor"
+            subtitle={t('dashboard.currentContribution', language)}
             icon={<PieIcon size={18} className="text-purple-400" />}
           >
             <ResponsiveContainer width="100%" height="100%">
@@ -227,14 +228,14 @@ export default function DashboardPage() {
                     <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={tooltipStyle} formatter={(val: number, name: string) => [`Score: ${val}`, name]} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(val: number, name: string) => [`${t('riskScore', language)}: ${formatLocalizedNumber(val, language, { maximumFractionDigits: 0 })}`, name]} />
               </PieChart>
             </ResponsiveContainer>
           </ChartCard>
 
           <ChartCard
             title={t('safetyScoreHistory', language)}
-            subtitle="Risk score over recent readings"
+            subtitle={t('dashboard.recentRiskScore', language)}
             icon={<Clock size={18} className="text-accent" />}
           >
             <ResponsiveContainer width="100%" height="100%">
@@ -242,7 +243,7 @@ export default function DashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--bg-secondary)" />
                 <XAxis dataKey="timestamp" tick={false} axisLine={{ stroke: 'var(--bg-secondary)' }} />
                 <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(val: number) => [`${val}/100`, 'Safety Score']} labelFormatter={() => ''} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(val: number) => [`${formatLocalizedNumber(val, language, { maximumFractionDigits: 0 })}/100`, t('safety.safetyIndex', language)]} labelFormatter={() => ''} />
                 <Bar dataKey="safety_score" radius={[6, 6, 0, 0]} fill="var(--accent-primary)" animationDuration={1200} />
               </BarChart>
             </ResponsiveContainer>

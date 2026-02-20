@@ -6,11 +6,13 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
+import { useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, MapPin, Sparkles, RotateCcw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { sendMapChatMessage } from '@/lib/api';
-import type { MapChatMessage } from '@/types';
+import type { Language, MapChatMessage } from '@/types';
+import { t } from '@/lib/translations';
 
 const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -18,16 +20,8 @@ interface MapChatBoxProps {
   selectedLocation: { lat: number; lon: number; name: string } | null;
 }
 
-const SUGGESTED_QUESTIONS = [
-  'Is it safe for seniors to go outside here?',
-  'How is the air quality at this location?',
-  'What are the main environmental risks?',
-  'Is it safe for a morning walk?',
-  'Should elderly people avoid this area today?',
-  'What precautions should I take here?',
-];
-
 export default function MapChatBox({ selectedLocation }: MapChatBoxProps) {
+  const locale = useLocale() as Language;
   const [messages, setMessages] = useState<MapChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -89,7 +83,7 @@ export default function MapChatBox({ selectedLocation }: MapChatBoxProps) {
       const errorMsg: MapChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: t('chat.mapRequestFailed', locale),
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMsg]);
@@ -114,7 +108,7 @@ export default function MapChatBox({ selectedLocation }: MapChatBoxProps) {
       <div className="h-full flex items-center justify-center p-6">
         <div className="text-center">
           <MapPin className="w-10 h-10 text-content-secondary/30 mx-auto mb-3" />
-          <p className="text-sm text-content-secondary">Select a location on the map to start asking questions</p>
+          <p className="text-sm text-content-secondary">{t('chat.selectLocationToAsk', locale)}</p>
         </div>
       </div>
     );
@@ -127,7 +121,7 @@ export default function MapChatBox({ selectedLocation }: MapChatBoxProps) {
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-accent" />
           <div>
-            <h3 className="text-sm font-semibold text-content-primary">AI Assistant</h3>
+            <h3 className="text-sm font-semibold text-content-primary">{t('chat.assistant', locale)}</h3>
             <p className="text-xs text-content-secondary truncate max-w-[200px]">
               {selectedLocation.name || `${selectedLocation.lat.toFixed(3)}, ${selectedLocation.lon.toFixed(3)}`}
             </p>
@@ -136,8 +130,8 @@ export default function MapChatBox({ selectedLocation }: MapChatBoxProps) {
         {messages.length > 0 && (
           <button
             onClick={handleReset}
-            className="p-1.5 text-content-secondary hover:text-content-primary hover:bg-surface-secondary rounded-lg transition-colors"
-            title="Clear conversation"
+            className="p-1.5 min-h-[44px] min-w-[44px] text-content-secondary hover:text-content-primary hover:bg-surface-secondary rounded-lg transition-colors"
+            title={t('chat.clearConversation', locale)}
           >
             <RotateCcw size={14} />
           </button>
@@ -154,16 +148,15 @@ export default function MapChatBox({ selectedLocation }: MapChatBoxProps) {
               className="space-y-3"
             >
               <p className="text-xs text-content-secondary text-center mb-3">
-                Ask anything about environmental conditions at <strong className="text-content-primary">{selectedLocation.name || 'this location'}</strong>
+                {t('chat.askAboutLocation', locale)} <strong className="text-content-primary">{selectedLocation.name || t('chat.thisLocation', locale)}</strong>
               </p>
               <div className="space-y-2">
-                {SUGGESTED_QUESTIONS.slice(0, 4).map((q, i) => (
+                {[t('chat.mapSuggestion1', locale), t('chat.mapSuggestion2', locale), t('chat.mapSuggestion3', locale), t('chat.mapSuggestion4', locale)].map((q, i) => (
                   <motion.button
                     key={i}
-                    whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
                     onClick={() => sendMessage(q)}
-                    className="w-full text-left text-xs px-3 py-2.5 bg-surface-secondary/50 hover:bg-accent/5 hover:text-accent border border-surface-secondary hover:border-accent/20 rounded-2xl transition-all text-content-secondary"
+                    className="w-full text-left text-xs px-3 py-2.5 min-h-[44px] bg-surface-secondary/50 hover:bg-accent/5 hover:text-accent border border-surface-secondary hover:border-accent/20 rounded-2xl transition-all text-content-secondary"
                   >
                     {q}
                   </motion.button>
@@ -229,16 +222,15 @@ export default function MapChatBox({ selectedLocation }: MapChatBoxProps) {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about this location..."
+            placeholder={t('chat.askLocationPlaceholder', locale)}
             className="flex-1 px-4 py-2.5 bg-surface-card border border-surface-secondary rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40 text-content-primary placeholder:text-content-secondary"
             disabled={isLoading}
           />
           <motion.button
-            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="p-2.5 bg-accent text-white rounded-2xl hover:bg-accent-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="p-2.5 min-h-[44px] min-w-[44px] bg-accent text-white rounded-2xl hover:bg-accent-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             <Send size={16} />
           </motion.button>

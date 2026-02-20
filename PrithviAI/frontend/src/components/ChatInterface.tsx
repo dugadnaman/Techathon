@@ -56,9 +56,9 @@ export default function ChatInterface({ language, ageGroup, city }: ChatInterfac
       setSuggestions(data.suggestions);
     } catch {
       setSuggestions([
-        "Is it safe for seniors to go outside?",
-        "How is the air quality?",
-        "What's today's safety summary?",
+        t('chat.fallbackSuggestion1', language),
+        t('chat.fallbackSuggestion2', language),
+        t('chat.fallbackSuggestion3', language),
       ]);
     }
   }
@@ -104,7 +104,7 @@ export default function ChatInterface({ language, ageGroup, city }: ChatInterfac
       const errorMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Sorry, I could not process your request. Please make sure the backend server is running and try again.',
+        content: t('chat.requestFailed', language),
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMsg]);
@@ -194,7 +194,7 @@ export default function ChatInterface({ language, ageGroup, city }: ChatInterfac
               >
                 {msg.role === 'assistant' && msg.risk_level && (
                   <span className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full text-white mb-2 ${getRiskBadgeBg(msg.risk_level)}`}>
-                    {msg.risk_level} RISK
+                    {msg.risk_level}
                   </span>
                 )}
                 <div className="text-sm whitespace-pre-wrap leading-relaxed">
@@ -248,7 +248,7 @@ export default function ChatInterface({ language, ageGroup, city }: ChatInterfac
             whileTap={{ scale: 0.95 }}
             onClick={() => handleSend()}
             disabled={!input.trim() || loading}
-            className="p-3 bg-accent text-white rounded-2xl hover:bg-accent-dark
+            className="p-3 min-h-[44px] min-w-[44px] bg-accent text-white rounded-2xl
               disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-glow-green"
           >
             <Send size={18} />

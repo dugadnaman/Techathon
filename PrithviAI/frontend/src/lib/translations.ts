@@ -134,6 +134,12 @@ const FLAT_KEY_MAP: Record<string, string> = {
   searchLocations: 'explore.searchLocations',
   data: 'explore.data',
   quick: 'explore.quick',
+  loadingMap: 'explore.loadingMap',
+  closeSidebar: 'explore.closeSidebar',
+  openSidebar: 'explore.openSidebar',
+  failedLocationData: 'explore.failedLocationData',
+  quickAdvisory: 'daily.quickAdvisory',
+  analysisLoading: 'daily.analysisLoading',
 };
 
 /**
@@ -152,9 +158,35 @@ export function t(key: string, lang: string = 'en'): string {
 }
 
 /**
+ * Translate string with placeholder replacements, e.g. "{value}%".
+ */
+export function tFormat(
+  key: string,
+  params: Record<string, string | number>,
+  lang: string = 'en',
+): string {
+  const template = t(key, lang);
+  return Object.entries(params).reduce(
+    (acc, [name, value]) => acc.replaceAll(`{${name}}`, String(value)),
+    template,
+  );
+}
+
+/**
  * Translate a risk level label.
  */
 export function tRisk(level: string, lang: string = 'en'): string {
-  const normalized = level.toLowerCase();
-  return t(`risk.${normalized}`, lang);
+  const normalized = level.toLowerCase().trim().replace(/[\s_-]+/g, '');
+  const alias: Record<string, string> = {
+    low: 'low',
+    moderate: 'moderate',
+    medium: 'moderate',
+    high: 'high',
+    veryhigh: 'high',
+    severe: 'high',
+  };
+
+  const riskKey = `risk.${alias[normalized] ?? normalized}`;
+  const translated = t(riskKey, lang);
+  return translated === riskKey ? t('risk.moderate', lang) : translated;
 }

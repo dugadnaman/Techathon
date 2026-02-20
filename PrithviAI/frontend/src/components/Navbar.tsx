@@ -50,7 +50,7 @@ export default function Navbar({ language, onLanguageChange }: NavbarProps) {
                 key={link.href}
                 href={link.href}
                 className="flex items-center gap-2 px-4 py-2 text-sm text-content-secondary
-                  hover:text-accent hover:bg-accent/5 rounded-xl transition-all duration-200"
+                  rounded-xl transition-all duration-200"
               >
                 {link.icon}
                 {link.label}
@@ -66,7 +66,8 @@ export default function Navbar({ language, onLanguageChange }: NavbarProps) {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 rounded-xl hover:bg-surface-secondary text-content-secondary"
+              className="md:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-content-secondary inline-flex items-center justify-center"
+              aria-label={isMenuOpen ? t('common.closeMenu', language) : t('common.openMenu', language)}
             >
               {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -78,26 +79,36 @@ export default function Navbar({ language, onLanguageChange }: NavbarProps) {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="md:hidden glass-card border-t border-white/5 overflow-hidden"
+            className="md:hidden fixed inset-0 glass-card border-t border-white/5 overflow-hidden"
+            style={{ zIndex: 60 }}
           >
-            <div className="px-4 py-3 space-y-1">
+            <div className="px-5 py-4 h-full overflow-y-auto flex flex-col">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm text-content-primary font-medium">{t('language.switcher', language)}</span>
+                <button
+                  onClick={() => setIsMenuOpen(false)}
+                  className="p-2 min-h-[44px] min-w-[44px] rounded-xl text-content-secondary inline-flex items-center justify-center"
+                  aria-label={t('common.closeMenu', language)}
+                >
+                  <X size={20} />
+                </button>
+              </div>
               {links.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 text-content-primary
-                    hover:bg-accent/5 rounded-xl transition-colors"
+                  className="flex items-center gap-3 px-2 py-3 min-h-[44px] text-content-primary rounded-xl transition-colors"
                 >
                   {link.icon}
                   <span className="font-medium">{link.label}</span>
                 </Link>
               ))}
-              <div className="pt-2 px-4">
+              <div className="pt-4 mt-auto">
                 <LanguageSwitcher />
               </div>
             </div>

@@ -51,15 +51,27 @@
 
 html {
   scroll-behavior: auto; /* Lenis handles smooth scroll */
+  overflow-x: hidden;
 }
 
 body {
   color: var(--text-primary);
   background: var(--bg-primary);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family:
+    'Inter',
+    'Noto Sans Devanagari',
+    'Noto Sans Telugu',
+    'Noto Sans Bengali',
+    'Noto Sans Gujarati',
+    'Noto Sans Tamil',
+    'Noto Sans Malayalam',
+    'Noto Sans Kannada',
+    'Noto Sans',
+    sans-serif;
   transition: background-color 0.2s ease, color 0.2s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 /* ─── Custom Scrollbar ─── */
@@ -83,6 +95,13 @@ body {
 /* ─── Interactive Elements ─── */
 button, a, input, select {
   transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+button,
+input,
+select,
+textarea {
+  min-height: 44px;
 }
 
 /* ─── Utility Classes ─── */
@@ -184,6 +203,15 @@ button, a, input, select {
 
 body {
   animation: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ─── Interactive Element Hover Glow ─── */

@@ -23,8 +23,6 @@ import type { SafetyIndex, HealthAlert, DailySummary, EnvironmentData, AgeGroup,
 import { Shield, MapPin, UserCircle, Activity, LocateFixed, Loader2 } from 'lucide-react';
 import { t } from '@/lib/translations';
 
-const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
-
 const CITY_COORDS: Record<string, { lat: number; lon: number }> = {
   Pune: { lat: 18.5204, lon: 73.8567 },
   Mumbai: { lat: 19.0760, lon: 72.8777 },
@@ -180,10 +178,10 @@ export default function HomePage() {
       if (summaryResult.status === 'fulfilled') setDailySummary(summaryResult.value);
       if (envResult.status === 'fulfilled') setEnvData(envResult.value);
       if ([riskResult, alertResult, summaryResult, envResult].every(r => r.status === 'rejected')) {
-        setError('Unable to connect to backend. Please ensure the server is running.');
+        setError(t('common.backendUnavailable', language));
       }
     } catch {
-      setError('Failed to load data. Please check your connection.');
+      setError(t('common.connectionError', language));
     } finally {
       setLoading(false);
     }
@@ -195,10 +193,10 @@ export default function HomePage() {
       <HeroV2 aqi={envData?.aqi ?? 72} />
 
       {/* ═══════════════ CONTROLS BAR ═══════════════ */}
-      <section className="py-4 px-4 max-w-5xl mx-auto">
+      <section className="py-3 px-3 sm:px-4 max-w-5xl mx-auto">
         <RevealSection>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-4 py-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+            <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-3 py-2.5 min-h-[44px]">
               <MapPin size={16} className="text-accent" />
               <select
                 value={city}
@@ -206,7 +204,7 @@ export default function HomePage() {
                   setCity(e.target.value);
                   if (e.target.value !== '__custom__') setCustomCoords(null);
                 }}
-                className="text-sm text-content-primary bg-transparent outline-none cursor-pointer"
+                className="text-sm text-content-primary bg-transparent outline-none cursor-pointer w-full"
               >
                 {customCoords && (
                   <option value="__custom__">📍 {customCoords.label}</option>
@@ -224,39 +222,39 @@ export default function HomePage() {
             <button
               onClick={detectLocation}
               disabled={detectingLocation}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm rounded-2xl border transition-all duration-300 ${
+              className={`flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] text-sm rounded-2xl border transition-all duration-300 ${
                 locationDetected
                   ? 'bg-risk-low/10 border-risk-low/30 text-risk-low'
-                  : 'glass-card-solid text-content-secondary hover:border-accent/40 hover:text-accent'
+                  : 'glass-card-solid text-content-secondary'
               } ${detectingLocation ? 'opacity-60 cursor-wait' : 'cursor-pointer'}`}
-              title="Detect my location"
+              title={t('detectLocation', language)}
             >
               {detectingLocation ? (
                 <Loader2 size={15} className="animate-spin" />
               ) : (
                 <LocateFixed size={15} />
               )}
-              {detectingLocation ? 'Detecting...' : locationDetected ? 'Re-detect' : t('detectLocation', language)}
+              {detectingLocation ? t('common.detecting', language) : locationDetected ? t('common.redetect', language) : t('detectLocation', language)}
             </button>
 
-            <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-4 py-2.5">
+            <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-3 py-2.5 min-h-[44px]">
               <UserCircle size={16} className="text-accent" />
               <select
                 value={ageGroup}
                 onChange={(e) => setAgeGroup(e.target.value as AgeGroup)}
-                className="text-sm text-content-primary bg-transparent outline-none cursor-pointer"
+                className="text-sm text-content-primary bg-transparent outline-none cursor-pointer w-full"
               >
                 <option value="elderly">{t('seniorCitizen', language)}</option>
                 <option value="adult">{t('adult', language)}</option>
               </select>
             </div>
 
-            <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-4 py-2.5">
+            <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-3 py-2.5 min-h-[44px]">
               <Activity size={16} className="text-accent" />
               <select
                 value={activity}
                 onChange={(e) => setActivity(e.target.value as ActivityIntent)}
-                className="text-sm text-content-primary bg-transparent outline-none cursor-pointer"
+                className="text-sm text-content-primary bg-transparent outline-none cursor-pointer w-full"
               >
                 <option value="walking">{t('walking', language)}</option>
                 <option value="rest">{t('resting', language)}</option>
@@ -267,11 +265,10 @@ export default function HomePage() {
             </div>
 
             <motion.button
-              whileHover={{ scale: 1.06, y: -1 }}
               whileTap={{ scale: 0.92 }}
               transition={{ type: 'spring', stiffness: 500, damping: 15 }}
               onClick={loadData}
-              className="px-5 py-2.5 bg-accent text-white text-sm rounded-2xl font-medium shadow-glow-green hover:shadow-glow-green/80 active:shadow-none"
+              className="px-5 py-2.5 min-h-[44px] bg-accent text-white text-sm rounded-2xl font-medium shadow-glow-green active:shadow-none"
             >
               {t('refresh', language)}
             </motion.button>
@@ -303,7 +300,7 @@ export default function HomePage() {
       )}
 
       {/* ═══════════════ ENVIRONMENT DATA ═══════════════ */}
-      <section className="py-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section id="environment-data" className="py-3 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <RevealSection>
           <div className="flex items-center gap-2 mb-4">
             <span className="w-1.5 h-6 rounded-full bg-accent" />
@@ -316,7 +313,7 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════════ SAFETY INDEX + DAILY SUMMARY ═══════════════ */}
-      <section className="py-3 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section className="py-2 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <RevealSection>
             <SafetyIndexDisplay safetyIndex={safetyIndex} loading={loading} language={language} />
@@ -342,7 +339,7 @@ export default function HomePage() {
 
       {/* ═══════════════ RISK FACTORS ═══════════════ */}
       {safetyIndex && (
-        <section className="py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <section className="py-5 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <RevealSection>
             <div className="flex items-center gap-2 mb-5">
               <Shield size={18} className="text-accent" />
@@ -363,7 +360,7 @@ export default function HomePage() {
 
       {/* ═══════════════ FORECAST ═══════════════ */}
       {dailySummary?.forecast && (
-        <section className="py-6 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+        <section className="py-5 px-3 sm:px-6 lg:px-8 max-w-5xl mx-auto">
           <RevealSection>
             <ForecastChart points={dailySummary.forecast.points} />
           </RevealSection>

@@ -18,6 +18,7 @@ const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
 export default function GlowOverlay({ aqi }: GlowOverlayProps) {
   const [displayColor, setDisplayColor] = useState(() => getAQIGlow(aqi));
+  const [isMobile, setIsMobile] = useState(false);
   const transitioningRef = useRef(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevAqiRef = useRef(aqi);
@@ -41,6 +42,13 @@ export default function GlowOverlay({ aqi }: GlowOverlayProps) {
         transitioningRef.current = false;
       }, 750);
     }, 650); // 400ms transition + 250ms pause
+  }, []);
+
+  useEffect(() => {
+    const updateViewport = () => setIsMobile(window.innerWidth < 640);
+    updateViewport();
+    window.addEventListener('resize', updateViewport, { passive: true });
+    return () => window.removeEventListener('resize', updateViewport);
   }, []);
 
   useEffect(() => {
@@ -68,6 +76,7 @@ export default function GlowOverlay({ aqi }: GlowOverlayProps) {
         width: '130%',
         height: '130%',
         transform: 'translate(-50%, -50%)',
+        opacity: isMobile ? 0.72 : 1,
         background: `radial-gradient(ellipse at center, ${displayColor} 0%, transparent 70%)`,
         transition: `background ${transitionDuration} ${EASE}`,
       }}

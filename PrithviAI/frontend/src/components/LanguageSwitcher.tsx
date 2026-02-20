@@ -11,6 +11,8 @@ import { useLocale } from 'next-intl';
 import { useRouter, usePathname } from '@/i18n/routing';
 import { Globe } from 'lucide-react';
 import { getLanguageName } from '@/lib/utils';
+import { t } from '@/lib/translations';
+import type { Language } from '@/types';
 
 const LANGUAGE_GROUPS = [
   {
@@ -36,7 +38,7 @@ const LANGUAGE_GROUPS = [
 ];
 
 export default function LanguageSwitcher() {
-  const locale = useLocale();
+  const locale = useLocale() as Language;
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -65,7 +67,7 @@ export default function LanguageSwitcher() {
         className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-xl
           bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10
           text-content-primary transition-all duration-200"
-        aria-label="Select language"
+        aria-label={t('language.select', locale)}
       >
         <Globe size={14} />
         <span className="hidden sm:inline">{getLanguageName(locale)}</span>
@@ -81,7 +83,15 @@ export default function LanguageSwitcher() {
           {LANGUAGE_GROUPS.map((group) => (
             <div key={group.label}>
               <p className="px-4 pt-3 pb-1 text-[10px] uppercase tracking-widest text-gray-400 font-semibold">
-                {group.label}
+                {group.label === 'Popular'
+                  ? t('language.groupPopular', locale)
+                  : group.label === 'South Indian'
+                    ? t('language.groupSouth', locale)
+                    : group.label === 'West & North'
+                      ? t('language.groupWestNorth', locale)
+                      : group.label === 'East & North-East'
+                        ? t('language.groupEastNorthEast', locale)
+                        : t('language.groupClassical', locale)}
               </p>
               {group.codes.map((code) => (
                 <button

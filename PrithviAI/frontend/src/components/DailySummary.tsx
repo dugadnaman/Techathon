@@ -10,6 +10,7 @@ import { Sun, Sunset, Moon } from 'lucide-react';
 import type { DailySummary } from '@/types';
 import type { Language } from '@/types';
 import { t } from '@/lib/translations';
+import { formatDate } from '@/lib/utils';
 
 interface DailySummaryCardProps {
   summary: DailySummary | null;
@@ -38,21 +39,21 @@ export default function DailySummaryCard({ summary, loading, language = 'en' }: 
       label: t('morning', language),
       icon: <Sun className="text-amber-400" size={20} />,
       advice: summary.morning_advice,
-      time: '6 AM – 12 PM',
+      time: t('daily.hoursMorning', language),
       bg: 'bg-amber-500/5 border-amber-500/10',
     },
     {
       label: t('afternoon', language),
       icon: <Sunset className="text-orange-400" size={20} />,
       advice: summary.afternoon_advice,
-      time: '12 PM – 6 PM',
+      time: t('daily.hoursAfternoon', language),
       bg: 'bg-orange-500/5 border-orange-500/10',
     },
     {
       label: t('evening', language),
       icon: <Moon className="text-indigo-400" size={20} />,
       advice: summary.evening_advice,
-      time: '6 PM – 10 PM',
+      time: t('daily.hoursEvening', language),
       bg: 'bg-indigo-500/5 border-indigo-500/10',
     },
   ];
@@ -61,7 +62,7 @@ export default function DailySummaryCard({ summary, loading, language = 'en' }: 
     <div className="glass-card-solid rounded-3xl p-5">
       <div className="mb-3">
         <h2 className="text-base font-semibold text-content-primary">{t('dailySafetyGuide', language)}</h2>
-        <p className="text-xs text-content-secondary">{summary.location} — {summary.date}</p>
+        <p className="text-xs text-content-secondary">{summary.location} — {formatDate(summary.date, language)}</p>
       </div>
 
       <div className="space-y-3">
