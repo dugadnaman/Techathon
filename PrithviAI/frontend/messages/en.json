@@ -1,0 +1,112 @@
+{
+  "hero": {
+    "title": "Prithvi",
+    "subtitle": "Environmental intelligence for real life.",
+    "description": "Real-time environmental risk analysis, predictive safety insights, and voice-powered guidance — built for the people who need it most.",
+    "checkMyArea": "Check My Area",
+    "voiceAssistant": "Use Voice Assistant"
+  },
+  "navbar": {
+    "home": "Home",
+    "map": "Map",
+    "voice": "Voice",
+    "dashboard": "Dashboard",
+    "exploreMap": "Explore Map",
+    "mapExplorer": "Map Explorer",
+    "aiChat": "AI Chat"
+  },
+  "common": {
+    "appName": "Prithvi",
+    "tagline": "AI-driven environmental intelligence that transforms raw data into simple, actionable safety guidance.",
+    "seniorCitizen": "Senior Citizen",
+    "adult": "Adult",
+    "walking": "Walking",
+    "resting": "Resting",
+    "exercise": "Exercise",
+    "outdoorWork": "Outdoor Work",
+    "commuting": "Commuting",
+    "refresh": "Refresh",
+    "detectLocation": "Detect Location",
+    "detecting": "Detecting...",
+    "redetect": "Re-detect",
+    "liveEnvironmentData": "Live Environment Data",
+    "environmentalIntelligence": "Environmental Intelligence",
+    "footer": "Prithvi — Built to protect the people who need it most.",
+    "disclaimer": "Data sourced from government and public APIs. Guidance is advisory, not a substitute for professional medical advice.",
+    "loading": "Loading..."
+  },
+  "environment": {
+    "temperature": "Temperature",
+    "feelsLike": "Feels like",
+    "airQuality": "Air Quality (AQI)",
+    "humidity": "Humidity",
+    "uvIndex": "UV Index",
+    "rainfall": "Rainfall",
+    "noise": "Noise Level",
+    "wind": "Wind Speed",
+    "visibility": "Visibility",
+    "aqi": "AQI",
+    "snapshot": "Environment Snapshot",
+    "thermalComfort": "Thermal Comfort",
+    "uvExposure": "UV Exposure",
+    "floodRisk": "Flood / Waterlogging",
+    "noisePollution": "Noise Pollution"
+  },
+  "risk": {
+    "low": "Low Risk",
+    "moderate": "Moderate Risk",
+    "high": "High Risk",
+    "detailedAnalysis": "Detailed Risk Analysis",
+    "score": "Risk Score",
+    "topConcern": "Top Concern",
+    "breakdown": "Risk Factor Breakdown",
+    "distribution": "Risk Factor Distribution"
+  },
+  "safety": {
+    "index": "Senior Safety Index",
+    "safetyIndex": "Safety Index",
+    "assessment": "Realtime safety assessment for your location",
+    "keyConcerns": "Key Concerns",
+    "whatToDo": "What To Do",
+    "scoreHistory": "Safety Score History"
+  },
+  "chat": {
+    "assistant": "Prithvi AI Assistant",
+    "subtitle": "Environmental safety powered by AI",
+    "welcome": "Hello! I'm Prithvi, your environmental safety assistant. How can I help you today?",
+    "placeholder": "Ask about air quality, weather safety, health risks...",
+    "typeMessage": "Type a message..."
+  },
+  "daily": {
+    "guide": "Daily Safety Guide",
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "evening": "Evening",
+    "forecastAlerts": "Forecast Alerts",
+    "summary": "Daily Summary",
+    "recommendations": "Recommendations",
+    "alerts": "Alerts"
+  },
+  "dashboard": {
+    "title": "Environmental Dashboard",
+    "areaMonitoring": "Area-wise environmental monitoring for senior safety",
+    "safetyStatus": "Area-wise Safety Status",
+    "aqiTrend": "AQI Trend (24h)",
+    "tempTrend": "Temperature Trend",
+    "riskBreakdown": "Risk Factor Breakdown",
+    "safetyHistory": "Safety Score History",
+    "footer": "Data refreshes every 5 minutes from live sources.",
+    "historicalTrends": "Historical Trends (7 Days)"
+  },
+  "explore": {
+    "title": "Map Explorer",
+    "clickToExplore": "Click on the map to explore environmental data",
+    "searchLocations": "Search locations...",
+    "data": "Data",
+    "quick": "Quick"
+  },
+  "language": {
+    "switcher": "Language",
+    "select": "Select language"
+  }
+}

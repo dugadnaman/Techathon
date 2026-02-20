@@ -5,17 +5,18 @@
  * Clean white typography on dark hero, with teal accent button.
  */
 
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const NAV_LINKS = [
-  { href: '/', label: 'Home' },
-  { href: '/explore', label: 'Map' },
-  { href: '/chat', label: 'Voice' },
-  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/' as const, label: 'Home' },
+  { href: '/explore' as const, label: 'Map' },
+  { href: '/chat' as const, label: 'Voice' },
+  { href: '/dashboard' as const, label: 'Dashboard' },
 ];
 
 export default function NavbarV2() {
@@ -57,6 +58,7 @@ export default function NavbarV2() {
 
         {/* Right Side */}
         <div className="hidden md:flex items-center gap-4">
+          <LanguageSwitcher />
           <ThemeToggle />
           <Link
             href="/explore"
@@ -104,6 +106,7 @@ export default function NavbarV2() {
                 </Link>
               ))}
               <div className="pt-2 flex items-center gap-3">
+                <LanguageSwitcher />
                 <ThemeToggle />
                 <Link
                   href="/explore"

@@ -1,8 +1,5 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import ThemeProvider from '@/components/providers/ThemeProvider';
-import SmoothScrollProvider from '@/components/providers/SmoothScroll';
-import CursorGlow from '@/components/CursorGlow';
 
 export const metadata: Metadata = {
   title: 'Prithvi — Environmental Safety for Seniors',
@@ -11,21 +8,15 @@ export const metadata: Metadata = {
   keywords: ['environment', 'safety', 'seniors', 'air quality', 'health', 'AI'],
 };
 
+/**
+ * Root layout — minimal passthrough.
+ * The real html/body + providers live in [locale]/layout.tsx
+ * so next-intl can inject the correct <html lang="...">
+ */
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen antialiased bg-surface-primary text-content-primary">
-        <ThemeProvider>
-          <SmoothScrollProvider>
-            <CursorGlow />
-            {children}
-          </SmoothScrollProvider>
-        </ThemeProvider>
-      </body>
-    </html>
-  );
+  return children;
 }

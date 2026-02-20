@@ -8,6 +8,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLocale } from 'next-intl';
 import { Map, Database, MessageSquare, ChevronLeft, ChevronRight, Search, Loader2, X } from 'lucide-react';
 import DataPanel from '@/components/DataPanel';
 import MapChatBox from '@/components/MapChatBox';
@@ -33,6 +34,9 @@ const InteractiveMap = dynamic(() => import('@/components/InteractiveMap'), {
 type SidebarTab = 'data' | 'chat';
 
 export default function MapExplorerPage() {
+  const locale = useLocale();
+  const language = locale as Language;
+
   const [landmarks, setLandmarks] = useState<Landmark[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<{
     lat: number;
@@ -46,7 +50,6 @@ export default function MapExplorerPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [landmarkRiskLevels, setLandmarkRiskLevels] = useState<Record<string, RiskLevel>>({});
-  const [language, setLanguage] = useState<Language>('en');
 
   useEffect(() => {
     async function fetchLandmarks() {
@@ -97,7 +100,7 @@ export default function MapExplorerPage() {
 
   return (
     <div className="min-h-screen bg-surface-primary pt-16">
-      <Navbar language={language} onLanguageChange={setLanguage} />
+      <Navbar language={language} onLanguageChange={() => {}} />
 
       {/* Page Header */}
       <div className="glass-card-solid border-b border-surface-secondary">

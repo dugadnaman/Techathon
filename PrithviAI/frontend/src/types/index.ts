@@ -8,7 +8,10 @@
 export type RiskLevel = 'LOW' | 'MODERATE' | 'HIGH';
 export type AgeGroup = 'elderly' | 'adult';
 export type ActivityIntent = 'walking' | 'outdoor_work' | 'rest' | 'exercise' | 'commute';
-export type Language = 'en' | 'hi' | 'mr';
+export type Language =
+  | 'en' | 'hi' | 'mr' | 'bn' | 'ta' | 'te' | 'kn' | 'ml'
+  | 'gu' | 'pa' | 'or' | 'as' | 'ur' | 'gom' | 'mni' | 'brx'
+  | 'sa' | 'ne' | 'mai' | 'sat' | 'doi';
 
 // ─── Risk Factor ─────────────────────────────────────────
 

@@ -7,6 +7,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useLocale } from 'next-intl';
 import Navbar from '@/components/Navbar';
 import ChatInterface from '@/components/ChatInterface';
 import type { Language, AgeGroup } from '@/types';
@@ -16,13 +17,14 @@ import { t } from '@/lib/translations';
 const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 export default function ChatPage() {
-  const [language, setLanguage] = useState<Language>('en');
+  const locale = useLocale();
+  const language = locale as Language;
   const [ageGroup, setAgeGroup] = useState<AgeGroup>('elderly');
   const [city, setCity] = useState('Pune');
 
   return (
     <>
-      <Navbar language={language} onLanguageChange={setLanguage} />
+      <Navbar language={language} onLanguageChange={() => {}} />
 
       <main className="pt-20 pb-6 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
         {/* Controls */}

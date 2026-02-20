@@ -2,12 +2,13 @@
 
 /**
  * Prithvi — Home Page
- * Premium scroll-narrative experience with motion-driven sections.
+ * Production homepage with HeroV2 cinematic hero section.
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Navbar from '@/components/Navbar';
+import { useLocale } from 'next-intl';
+import { HeroV2 } from '@/components/hero-v2';
 import SafetyIndexDisplay from '@/components/SafetyIndex';
 import RiskCard from '@/components/RiskCard';
 import AlertBanner from '@/components/AlertBanner';
@@ -18,13 +19,12 @@ import DailyIntelligenceSection from '@/components/DailyIntelligenceSection';
 import EnvironmentAtGlance from '@/components/EnvironmentAtGlance';
 import { RevealSection, StaggerContainer, StaggerItem, FadeIn } from '@/components/motion';
 import { assessRisk, getAlerts, getDailySummary, getCurrentEnvironment } from '@/lib/api';
-import type { SafetyIndex, HealthAlert, DailySummary, EnvironmentData, Language, AgeGroup, ActivityIntent } from '@/types';
-import { Shield, MapPin, UserCircle, Activity, LocateFixed, Loader2, ChevronDown } from 'lucide-react';
+import type { SafetyIndex, HealthAlert, DailySummary, EnvironmentData, AgeGroup, ActivityIntent, Language } from '@/types';
+import { Shield, MapPin, UserCircle, Activity, LocateFixed, Loader2 } from 'lucide-react';
 import { t } from '@/lib/translations';
 
 const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
-// Accurate coordinates for each city
 const CITY_COORDS: Record<string, { lat: number; lon: number }> = {
   Pune: { lat: 18.5204, lon: 73.8567 },
   Mumbai: { lat: 19.0760, lon: 72.8777 },
@@ -35,7 +35,6 @@ const CITY_COORDS: Record<string, { lat: number; lon: number }> = {
   Hyderabad: { lat: 17.3850, lon: 78.4867 },
 };
 
-/** Haversine distance (km) between two lat/lon points */
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -46,7 +45,6 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-/** Find the nearest supported city within a threshold (km) */
 function findNearestCity(lat: number, lon: number, thresholdKm = 150): string | null {
   let best: string | null = null;
   let bestDist = Infinity;
@@ -61,7 +59,9 @@ function findNearestCity(lat: number, lon: number, thresholdKm = 150): string | 
 }
 
 export default function HomePage() {
-  const [language, setLanguage] = useState<Language>('en');
+  const locale = useLocale();
+  const language = locale as Language;
+
   const [ageGroup, setAgeGroup] = useState<AgeGroup>('elderly');
   const [activity, setActivity] = useState<ActivityIntent>('walking');
   const [city, setCity] = useState('Pune');
@@ -85,7 +85,6 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  /** Detect user location via browser Geolocation API */
   const detectLocation = useCallback(() => {
     if (!navigator.geolocation) return;
     setDetectingLocation(true);
@@ -136,7 +135,6 @@ export default function HomePage() {
         }
 
         setDetectedLocality(locality);
-
         const nearest = findNearestCity(latitude, longitude);
         if (nearest) {
           setCity(nearest);
@@ -193,70 +191,8 @@ export default function HomePage() {
 
   return (
     <>
-      <Navbar language={language} onLanguageChange={setLanguage} />
-
-      {/* ═══════════════ HERO SECTION ═══════════════ */}
-      <section className="relative flex flex-col items-center justify-center px-4 pt-24 pb-8 overflow-hidden">
-        {/* Subtle background gradient orbs */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 -left-32 w-64 h-64 rounded-full bg-accent/5 blur-3xl" />
-          <div className="absolute bottom-1/4 -right-32 w-64 h-64 rounded-full bg-blue-400/5 blur-3xl" />
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: EASE_OUT }}
-          className="text-center relative z-10 max-w-3xl mx-auto"
-        >
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.05, ease: EASE_OUT }}
-            className="text-micro uppercase tracking-[0.25em] text-accent mb-3 font-semibold"
-          >
-            Environmental Intelligence
-          </motion.p>
-          <motion.h1
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1, ease: EASE_OUT }}
-            className="text-5xl md:text-6xl font-extrabold text-content-primary mb-3 tracking-tight"
-          >
-            <span className="gradient-text">Prithvi</span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.2, ease: EASE_OUT }}
-            className="text-sm sm:text-base text-content-secondary max-w-md mx-auto mb-5"
-          >
-            {t('tagline', language)}
-          </motion.p>
-
-          {/* Location pill */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.35, delay: 0.3, ease: EASE_OUT }}
-            whileHover={{ scale: 1.03 }}
-            className="inline-flex items-center gap-2 glass-card rounded-full px-4 py-2"
-          >
-            {detectingLocation ? (
-              <Loader2 size={14} className="animate-spin text-accent" />
-            ) : (
-              <MapPin size={14} className="text-accent" />
-            )}
-            <span className="text-sm text-content-secondary">
-              {detectingLocation
-                ? 'Detecting location...'
-                : detectedLocality && locationDetected
-                  ? detectedLocality
-                  : displayCity}
-            </span>
-          </motion.div>
-        </motion.div>
-      </section>
+      {/* ═══════════════ CINEMATIC HERO (HeroV2) ═══════════════ */}
+      <HeroV2 aqi={envData?.aqi ?? 72} />
 
       {/* ═══════════════ CONTROLS BAR ═══════════════ */}
       <section className="py-4 px-4 max-w-5xl mx-auto">
@@ -300,7 +236,7 @@ export default function HomePage() {
               ) : (
                 <LocateFixed size={15} />
               )}
-              {detectingLocation ? 'Detecting...' : locationDetected ? 'Re-detect' : 'Detect Location'}
+              {detectingLocation ? 'Detecting...' : locationDetected ? 'Re-detect' : t('detectLocation', language)}
             </button>
 
             <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-4 py-2.5">
@@ -366,12 +302,14 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* ═══════════════ ENVIRONMENT DATA (first — most visible) ═══════════════ */}
+      {/* ═══════════════ ENVIRONMENT DATA ═══════════════ */}
       <section className="py-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <RevealSection>
           <div className="flex items-center gap-2 mb-4">
             <span className="w-1.5 h-6 rounded-full bg-accent" />
-            <h2 className="text-lg font-bold text-content-primary tracking-tight">Live Environment Data</h2>
+            <h2 className="text-lg font-bold text-content-primary tracking-tight">
+              {t('liveEnvironmentData', language)}
+            </h2>
           </div>
           <EnvironmentSnapshot data={envData} loading={loading} language={language} />
         </RevealSection>

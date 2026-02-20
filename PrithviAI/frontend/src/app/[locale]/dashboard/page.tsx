@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
+import { useLocale } from 'next-intl';
 import Navbar from '@/components/Navbar';
 import { RevealSection, StaggerContainer, StaggerItem, AnimatedCounter } from '@/components/motion';
 import { getDashboardSummary, getTrends, getRiskDistribution } from '@/lib/api';
@@ -57,7 +58,8 @@ const tooltipStyle = {
 };
 
 export default function DashboardPage() {
-  const [language, setLanguage] = useState<Language>('en');
+  const locale = useLocale();
+  const language = locale as Language;
   const [areas, setAreas] = useState<AreaData[]>([]);
   const [trends, setTrends] = useState<TrendPoint[]>([]);
   const [distribution, setDistribution] = useState<RiskDistribution[]>([]);
@@ -89,7 +91,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <Navbar language={language} onLanguageChange={setLanguage} />
+      <Navbar language={language} onLanguageChange={() => {}} />
 
       <main className="pt-20 pb-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         {/* Header */}

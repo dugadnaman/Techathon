@@ -1,0 +1,13 @@
+{
+  "hero": { "title": "ꯄꯨꯊꯕꯤ", "subtitle": "ꯑꯆꯝꯕ ꯄꯨꯟꯁꯤꯒꯤꯗꯃꯛ ꯃꯇꯝ ꯆꯨꯕ ꯃꯤꯠꯌꯦꯡ ꯂꯣꯟꯗꯥ.", "description": "ꯔꯤꯌꯦꯜ-ꯇꯥꯏꯝ ꯃꯇꯝ ꯆꯨꯕ ꯈꯣꯡꯊꯥꯡ ꯆꯦꯛꯁꯤꯟ ꯑꯃꯁꯨꯡ ꯈꯣꯡꯊꯥꯡ ꯂꯣꯟꯗꯥ.", "checkMyArea": "ꯑꯩꯒꯤ ꯃꯐꯝ ꯆꯦꯟꯕ", "voiceAssistant": "ꯋꯣꯏꯁ ꯑꯦꯁꯤꯁꯇꯦꯟꯠ ꯁꯤꯖꯤꯅꯕ" },
+  "navbar": { "home": "ꯍꯣꯝ", "map": "ꯃꯦꯞ", "voice": "ꯋꯣꯏꯁ", "dashboard": "ꯗꯦꯁꯕꯣꯔ꯭ꯗ", "exploreMap": "ꯃꯦꯞ ꯎꯕ", "mapExplorer": "ꯃꯦꯞ ꯑꯦꯛꯁꯞ꯭ꯂꯣꯔꯔ", "aiChat": "AI ꯆꯦꯠ" },
+  "common": { "tagline": "AI ꯁꯤꯖꯤꯟꯅꯕ ꯃꯇꯝ ꯆꯨꯕ ꯃꯤꯠꯌꯦꯡ ꯂꯣꯟꯗꯥ.", "seniorCitizen": "ꯑꯍꯜ ꯁꯤꯇꯤꯖꯦꯟ", "adult": "ꯑꯍꯜ", "walking": "ꯆꯠꯄ", "resting": "ꯂꯧꯕ", "exercise": "ꯑꯦꯛꯁꯔꯁꯥꯏꯖ", "outdoorWork": "ꯃꯄꯥꯟ ꯊꯨꯃꯤꯡ", "commuting": "ꯁꯦꯟꯗꯣꯛꯄ", "refresh": "ꯅꯍꯥ ꯁꯣꯛꯊꯣꯛꯄ", "detectLocation": "ꯃꯐꯝ ꯊꯤꯕ", "detecting": "ꯊꯤꯔꯤ...", "redetect": "ꯑꯃꯨꯛ ꯍꯟꯅ ꯊꯤꯕ", "liveEnvironmentData": "ꯂꯥꯏꯕ ꯃꯇꯝ ꯗꯦꯇꯥ", "environmentalIntelligence": "ꯃꯇꯝ ꯆꯨꯕ ꯃꯤꯠꯌꯦꯡ ꯂꯣꯟꯗꯥ", "footer": "ꯄꯨꯊꯕꯤ — ꯃꯇꯧ ꯑꯣꯏꯅ ꯃꯊꯧ ꯇꯥꯔꯕꯁꯤꯡ ꯒꯤꯗꯃꯛ ꯁꯦꯝꯕ.", "disclaimer": "ꯁꯔꯀꯥꯔꯒꯤ ꯑꯃꯁꯨꯡ ꯄꯕꯜꯏꯛ API ꯗꯒꯤ ꯗꯦꯇꯥ." },
+  "environment": { "temperature": "ꯇꯦꯝꯄꯔꯦꯆꯔ", "feelsLike": "ꯐꯤꯜꯁ ꯂꯥꯏꯛ", "airQuality": "ꯅꯨꯡꯁꯤꯠ ꯐꯖꯕ (AQI)", "humidity": "ꯍꯨꯃꯤꯗꯤꯇꯤ", "uvIndex": "UV ꯏꯟꯗꯦꯛꯁ", "rainfall": "ꯅꯣꯡ ꯁꯥꯕ", "noise": "ꯈꯣꯡꯖꯦꯜ ꯂꯦꯕꯦꯜ", "wind": "ꯅꯨꯡꯁꯤꯠ ꯁ꯭ꯄꯤꯗ", "visibility": "ꯎꯕ ꯌꯥꯕ" },
+  "risk": { "low": "ꯅꯦꯃ ꯈꯣꯡꯊꯥꯡ", "moderate": "ꯃꯗꯤꯌꯝ ꯈꯣꯡꯊꯥꯡ", "high": "ꯋꯥꯡꯕ ꯈꯣꯡꯊꯥꯡ", "detailedAnalysis": "ꯁꯦꯃꯒꯠ ꯁꯦꯃꯒꯠ ꯈꯣꯡꯊꯥꯡ ꯆꯦꯛꯁꯤꯟ", "score": "ꯈꯣꯡꯊꯥꯡ ꯁ꯭ꯀꯣꯔ", "topConcern": "ꯃꯔꯨꯑꯣꯏꯕ ꯋꯥꯈꯜ", "breakdown": "ꯈꯣꯡꯊꯥꯡ ꯐꯦꯛꯇꯔ" },
+  "safety": { "index": "ꯑꯍꯜ ꯁꯦꯐꯇꯤ ꯏꯟꯗꯦꯛꯁ", "assessment": "ꯅꯈꯣꯏꯒꯤ ꯃꯐꯝꯒꯤꯗꯃꯛ ꯁꯦꯐꯇꯤ ꯑꯦꯁꯦꯁꯃꯦꯟꯠ", "keyConcerns": "ꯃꯔꯨꯑꯣꯏꯕ ꯋꯥꯈꯜꯁꯤꯡ", "whatToDo": "ꯀꯔꯤ ꯇꯧꯒꯗꯒꯦ", "scoreHistory": "ꯁꯦꯐꯇꯤ ꯁ꯭ꯀꯣꯔ ꯅꯤꯡꯊꯧꯒꯤ ꯋꯥꯐꯝ" },
+  "chat": { "assistant": "ꯄꯨꯊꯕꯤ AI ꯑꯦꯁꯤꯁꯇꯦꯟꯠ", "subtitle": "AI ꯁꯤꯖꯤꯟꯅꯕ ꯃꯇꯝ ꯁꯦꯐꯇꯤ", "welcome": "ꯈꯨꯔꯨꯝꯖꯔꯤ! ꯑꯩ ꯄꯨꯊꯕꯤꯅꯤ. ꯅꯈꯣꯏꯗ ꯀꯔꯤ ꯃꯇꯦꯡ ꯄꯥꯡꯕ ꯌꯥꯒꯅꯤ?", "placeholder": "ꯅꯨꯡꯁꯤꯠ ꯐꯖꯕ, ꯅꯨꯡꯁꯤꯠ ꯁꯦꯐꯇꯤ, ꯍꯀꯁꯦꯜ ꯈꯣꯡꯊꯥꯡ ꯍꯥꯌꯕꯤꯌꯨ...", "typeMessage": "ꯃꯦꯁꯦꯖ ꯇꯥꯏꯞ ꯇꯧꯕꯤꯌꯨ..." },
+  "daily": { "guide": "ꯅꯨꯃꯤꯠꯀꯤ ꯁꯦꯐꯇꯤ ꯒꯥꯏꯗ", "morning": "ꯅꯨꯃꯤꯗꯥꯡ", "afternoon": "ꯅꯨꯃꯤꯠꯁꯥꯡ", "evening": "ꯅꯨꯡꯊꯤꯜ", "forecastAlerts": "ꯐꯣꯔꯀꯥꯁ꯭ꯠ ꯑꯦꯂꯔ꯭ꯠ" },
+  "dashboard": { "title": "ꯃꯇꯝ ꯗꯦꯁꯕꯣꯔ꯭ꯗ", "areaMonitoring": "ꯑꯍꯜ ꯁꯦꯐꯇꯤꯒꯤꯗꯃꯛ ꯑꯦꯔꯤꯌꯥ ꯃꯣꯅꯤꯇꯔꯤꯡ", "safetyStatus": "ꯑꯦꯔꯤꯌꯥ ꯁꯦꯐꯇꯤ ꯁ꯭ꯇꯦꯇꯁ", "aqiTrend": "AQI ꯠꯔꯦꯟꯗ (24 ꯄꯨꯡ)", "tempTrend": "ꯇꯦꯝꯄꯔꯦꯆꯔ ꯠꯔꯦꯟꯗ", "riskBreakdown": "ꯈꯣꯡꯊꯥꯡ ꯐꯦꯛꯇꯔ", "safetyHistory": "ꯁꯦꯐꯇꯤ ꯁ꯭ꯀꯣꯔ ꯅꯤꯡꯊꯧ", "footer": "ꯂꯥꯏꯕ ꯁꯣꯔꯁꯗꯒꯤ ꯃꯤꯅꯤꯠ 5 ꯈꯨꯗꯤꯡꯒꯤ ꯗꯦꯇꯥ ꯔꯤꯐꯔꯦꯁ ꯇꯧꯏ." },
+  "explore": { "title": "ꯃꯦꯞ ꯑꯦꯛꯁꯞ꯭ꯂꯣꯔꯔ", "clickToExplore": "ꯃꯇꯝ ꯗꯦꯇꯥ ꯎꯅꯕꯗ ꯃꯦꯞꯗ ꯀ꯭ꯂꯤꯛ ꯇꯧꯕꯤꯌꯨ", "searchLocations": "ꯃꯐꯝ ꯊꯤꯕ...", "data": "ꯗꯦꯇꯥ", "quick": "ꯊꯨꯅ" },
+  "language": { "switcher": "ꯂꯣꯟ", "select": "ꯂꯣꯟ ꯈꯅꯕꯤꯌꯨ" }
+}

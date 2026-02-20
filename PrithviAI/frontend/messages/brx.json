@@ -1,0 +1,13 @@
+{
+  "hero": { "title": "पृथ्वी", "subtitle": "सांजौनाय जिउनिखौ लागि सोबगोन गियान.", "description": "रियल-टाइम सोबगोन आक्रान बिजिरनाय, गोसोआव सैमाथि गियान आरो बिबुंथि रादाब — मोनसे चाहाबो गासैबो मानसिफोरत नेजेंनाय.", "checkMyArea": "आंनि जागा नाङो", "voiceAssistant": "भइस आसिस्टेन्ट बाहायो" },
+  "navbar": { "home": "गेजेर", "map": "म्याप", "voice": "बिबुंथि", "dashboard": "ड्यासबर्ड", "exploreMap": "म्याप नायो", "mapExplorer": "म्याप एक्सप्लरार", "aiChat": "AI सावराय" },
+  "common": { "tagline": "AI-सालायनाय सोबगोन गियान जाय गेलेमाल डाटाखौ गोरलै, हाबाफारि सैमाथि रादाबाव होबथानाय.", "seniorCitizen": "गथ सिटिजेन", "adult": "गथ गसा", "walking": "सानदोंनाय", "resting": "निलाग", "exercise": "बेसेन", "outdoorWork": "बायदि खामानि", "commuting": "थांनाय", "refresh": "रिफ्रेस", "detectLocation": "जागा नागिरनाय", "detecting": "नागिरबाय...", "redetect": "फिन नागिरनाय", "liveEnvironmentData": "लाइभ सोबगोन डाटा", "environmentalIntelligence": "सोबगोन गियान", "footer": "पृथ्वी — मोनसे चाहाबो गासैबो मानसिफोरखौ रैखानो नेजेंनाय.", "disclaimer": "सरकारनि आरो हारिमुनि API निफ्राय डाटा." },
+  "environment": { "temperature": "रां", "feelsLike": "मोनथि", "airQuality": "बार गुन (AQI)", "humidity": "दैसिम", "uvIndex": "UV इन्डेक्स", "rainfall": "बोरसिन", "noise": "खनलाउ बेसेन", "wind": "बार बेग", "visibility": "नुनानाय" },
+  "risk": { "low": "गोबां आक्रान", "moderate": "गेजेराव आक्रान", "high": "बांसिन आक्रान", "detailedAnalysis": "गेबें आक्रान बिजिरनाय", "score": "आक्रान स्कर", "topConcern": "मुं सिन्थांनाय", "breakdown": "आक्रान फेक्टर" },
+  "safety": { "index": "गथ सैमाथि इन्डेक्स", "assessment": "नोंनि जागानि रियल-टाइम सैमाथि बिजिरनाय", "keyConcerns": "मुं सिन्थांनायफोर", "whatToDo": "मा खालामगोन", "scoreHistory": "सैमाथि स्कर इतिहास" },
+  "chat": { "assistant": "पृथ्वी AI जेंना", "subtitle": "AI सालायनाय सोबगोन सैमाथि", "welcome": "फैगौ! आं पृथ्वी, नोंनि सोबगोन सैमाथि जेंना. दिनै आं नोंखौ माबोरै मदद होनो?", "placeholder": "बार गुन, हालदांनाय सैमाथि, देहा आक्रान...", "typeMessage": "बाथ्रा टाइप खालामो..." },
+  "daily": { "guide": "सानथाय सैमाथि गाइड", "morning": "फुं", "afternoon": "सान", "evening": "मोनाबिलि", "forecastAlerts": "गोसो एलार्ट" },
+  "dashboard": { "title": "सोबगोन ड्यासबर्ड", "areaMonitoring": "गथ सैमाथि एरिया मनिटरिं", "safetyStatus": "एरिया सैमाथि बेसाद", "aqiTrend": "AQI थांखि (24 घन्टा)", "tempTrend": "रां थांखि", "riskBreakdown": "आक्रान फेक्टर", "safetyHistory": "सैमाथि स्कर इतिहास", "footer": "लाइभ सोसनिफ्राय 5 मिनिटआव डाटा रिफ्रेस जायो." },
+  "explore": { "title": "म्याप एक्सप्लरार", "clickToExplore": "सोबगोन डाटा नायनो म्यापआव क्लिक खालामो", "searchLocations": "जागा नागिरो...", "data": "डाटा", "quick": "गोख्रों" },
+  "language": { "switcher": "राव", "select": "राव बासो" }
+}

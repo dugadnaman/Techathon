@@ -1,400 +1,160 @@
 /**
- * Prithvi — Full i18n Translation Support
- * Hindi (hi) and Marathi (mr) translations for all UI labels.
+ * PrithviAI — Translation Compatibility Layer
+ * Provides backward-compatible t(key, language) and tRisk(level, language)
+ * functions that read from the JSON message files.
+ *
+ * For new components, prefer using useTranslations() from next-intl directly.
  */
 
-import type { Language } from '@/types';
+import en from '../../messages/en.json';
+import hi from '../../messages/hi.json';
+import mr from '../../messages/mr.json';
+import bn from '../../messages/bn.json';
+import ta from '../../messages/ta.json';
+import te from '../../messages/te.json';
+import kn from '../../messages/kn.json';
+import ml from '../../messages/ml.json';
+import gu from '../../messages/gu.json';
+import pa from '../../messages/pa.json';
+import or_msg from '../../messages/or.json';
+import as_msg from '../../messages/as.json';
+import ur from '../../messages/ur.json';
+import gom from '../../messages/gom.json';
+import mni from '../../messages/mni.json';
+import brx from '../../messages/brx.json';
+import sa from '../../messages/sa.json';
+import ne from '../../messages/ne.json';
+import mai from '../../messages/mai.json';
+import sat from '../../messages/sat.json';
+import doi from '../../messages/doi.json';
 
-type TranslationMap = Record<string, Record<Language, string>>;
+const allMessages: Record<string, any> = {
+  en, hi, mr, bn, ta, te, kn, ml, gu, pa,
+  or: or_msg, as: as_msg, ur, gom, mni, brx, sa, ne, mai, sat, doi,
+};
 
-const T: TranslationMap = {
-  // ── App Name & Taglines ──
-  appName: {
-    en: 'Prithvi',
-    hi: 'पृथ्वी',
-    mr: 'पृथ्वी',
-  },
-  tagline: {
-    en: 'Environmental safety intelligence for senior citizens',
-    hi: 'वरिष्ठ नागरिकों के लिए पर्यावरण सुरक्षा बुद्धिमत्ता',
-    mr: 'ज्येष्ठ नागरिकांसाठी पर्यावरण सुरक्षा बुद्धिमत्ता',
-  },
-  footer: {
-    en: '🌍 Prithvi — Environmental Data Intelligence Platform • Built for Techathon 2026',
-    hi: '🌍 पृथ्वी — पर्यावरण डेटा बुद्धिमत्ता प्लेटफ़ॉर्म • टेकाथॉन 2026 के लिए निर्मित',
-    mr: '🌍 पृथ्वी — पर्यावरण डेटा बुद्धिमत्ता प्लॅटफॉर्म • टेकाथॉन 2026 साठी तयार',
-  },
-  disclaimer: {
-    en: 'Disclaimer: This platform provides general environmental guidance and does not constitute medical advice.',
-    hi: 'अस्वीकरण: यह प्लेटफ़ॉर्म सामान्य पर्यावरण मार्गदर्शन प्रदान करता है, यह चिकित्सा सलाह नहीं है।',
-    mr: 'अस्वीकरण: हे प्लॅटफॉर्म सामान्य पर्यावरण मार्गदर्शन देते, ही वैद्यकीय सल्ला नाही.',
-  },
+/** Resolve a dot-separated path in a nested object */
+function resolve(obj: any, path: string): string {
+  const result = path.split('.').reduce((o: any, k: string) => o?.[k], obj);
+  return typeof result === 'string' ? result : path;
+}
 
-  // ── Navigation ──
-  navHome: {
-    en: 'Home',
-    hi: 'होम',
-    mr: 'मुख्यपृष्ठ',
-  },
-  navMapExplorer: {
-    en: 'Map Explorer',
-    hi: 'नक्शा एक्सप्लोरर',
-    mr: 'नकाशा एक्सप्लोरर',
-  },
-  navAIChat: {
-    en: 'AI Chat',
-    hi: 'AI चैट',
-    mr: 'AI चॅट',
-  },
-  navDashboard: {
-    en: 'Dashboard',
-    hi: 'डैशबोर्ड',
-    mr: 'डॅशबोर्ड',
-  },
+/**
+ * Map old flat translation keys → new namespaced keys.
+ * Existing components use t('tagline', language) → common.tagline
+ */
+const FLAT_KEY_MAP: Record<string, string> = {
+  appName: 'common.appName',
+  tagline: 'common.tagline',
+  footer: 'common.footer',
+  disclaimer: 'common.disclaimer',
+  environmentalIntelligence: 'common.environmentalIntelligence',
+  liveEnvironmentData: 'common.liveEnvironmentData',
+  seniorCitizen: 'common.seniorCitizen',
+  adult: 'common.adult',
+  walking: 'common.walking',
+  resting: 'common.resting',
+  exercise: 'common.exercise',
+  outdoorWork: 'common.outdoorWork',
+  commuting: 'common.commuting',
+  refresh: 'common.refresh',
+  detectLocation: 'common.detectLocation',
+  loading: 'common.loading',
 
-  // ── User Controls ──
-  seniorCitizen: {
-    en: 'Senior Citizen',
-    hi: 'वरिष्ठ नागरिक',
-    mr: 'ज्येष्ठ नागरिक',
-  },
-  adult: {
-    en: 'Adult',
-    hi: 'वयस्क',
-    mr: 'प्रौढ',
-  },
-  walking: {
-    en: 'Walking',
-    hi: 'टहलना',
-    mr: 'चालणे',
-  },
-  resting: {
-    en: 'Resting',
-    hi: 'आराम',
-    mr: 'विश्रांती',
-  },
-  exercise: {
-    en: 'Exercise',
-    hi: 'व्यायाम',
-    mr: 'व्यायाम',
-  },
-  outdoorWork: {
-    en: 'Outdoor Work',
-    hi: 'बाहरी काम',
-    mr: 'बाहेरचे काम',
-  },
-  commuting: {
-    en: 'Commuting',
-    hi: 'आवागमन',
-    mr: 'प्रवास',
-  },
-  refresh: {
-    en: 'Refresh',
-    hi: 'रिफ्रेश',
-    mr: 'रिफ्रेश',
-  },
+  // Navbar
+  navHome: 'navbar.home',
+  navMapExplorer: 'navbar.mapExplorer',
+  navAIChat: 'navbar.aiChat',
+  navDashboard: 'navbar.dashboard',
 
-  // ── Section Headers ──
-  detailedRiskAnalysis: {
-    en: 'Detailed Risk Analysis',
-    hi: 'विस्तृत जोखिम विश्लेषण',
-    mr: 'तपशीलवार धोका विश्लेषण',
-  },
-  environmentalDashboard: {
-    en: 'Environmental Dashboard',
-    hi: 'पर्यावरण डैशबोर्ड',
-    mr: 'पर्यावरण डॅशबोर्ड',
-  },
-  areaWiseMonitoring: {
-    en: 'Area-wise monitoring and historical analysis',
-    hi: 'क्षेत्रवार निगरानी और ऐतिहासिक विश्लेषण',
-    mr: 'क्षेत्रनिहाय देखरेख आणि ऐतिहासिक विश्लेषण',
-  },
-  areaWiseSafetyStatus: {
-    en: 'Area-wise Safety Status',
-    hi: 'क्षेत्रवार सुरक्षा स्थिति',
-    mr: 'क्षेत्रनिहाय सुरक्षा स्थिती',
-  },
-  riskScore: {
-    en: '/100 risk score',
-    hi: '/100 जोखिम स्कोर',
-    mr: '/100 धोका स्कोर',
-  },
-  topConcern: {
-    en: 'Top concern:',
-    hi: 'मुख्य चिंता:',
-    mr: 'प्रमुख चिंता:',
-  },
-  historicalTrends: {
-    en: 'Historical Trends (7 Days)',
-    hi: 'ऐतिहासिक रुझान (7 दिन)',
-    mr: 'ऐतिहासिक ट्रेंड (7 दिवस)',
-  },
-  riskDistribution: {
-    en: 'Risk Factor Distribution',
-    hi: 'जोखिम कारक वितरण',
-    mr: 'धोका घटक वितरण',
-  },
-  dashboardFooter: {
-    en: '🌍 Prithvi Dashboard • Environmental Monitoring & Analytics',
-    hi: '🌍 पृथ्वी डैशबोर्ड • पर्यावरण निगरानी और विश्लेषण',
-    mr: '🌍 पृथ्वी डॅशबोर्ड • पर्यावरण देखरेख आणि विश्लेषण',
-  },
+  // Environment
+  temperature: 'environment.temperature',
+  feelsLike: 'environment.feelsLike',
+  airQuality: 'environment.airQuality',
+  humidity: 'environment.humidity',
+  uvIndex: 'environment.uvIndex',
+  rainfall: 'environment.rainfall',
+  noise: 'environment.noise',
+  wind: 'environment.wind',
+  visibility: 'environment.visibility',
+  aqi: 'environment.aqi',
+  environmentSnapshot: 'environment.snapshot',
+  thermalComfort: 'environment.thermalComfort',
+  uvExposure: 'environment.uvExposure',
+  floodRisk: 'environment.floodRisk',
+  noisePollution: 'environment.noisePollution',
 
-  // ── Chat Page ──
-  chatAssistant: {
-    en: 'Prithvi Assistant',
-    hi: 'पृथ्वी सहायक',
-    mr: 'पृथ्वी सहाय्यक',
-  },
-  chatWelcome: {
-    en: 'Welcome to Prithvi',
-    hi: 'पृथ्वी में आपका स्वागत है',
-    mr: 'पृथ्वी मध्ये आपले स्वागत',
-  },
-  chatSubtitle: {
-    en: 'Ask about environmental safety for seniors',
-    hi: 'वरिष्ठ नागरिकों की पर्यावरण सुरक्षा के बारे में पूछें',
-    mr: 'ज्येष्ठ नागरिकांच्या पर्यावरण सुरक्षेबद्दल विचारा',
-  },
-  chatPlaceholder: {
-    en: "Ask me anything about environmental safety for seniors. I'll give you clear, actionable guidance.",
-    hi: 'वरिष्ठ नागरिकों की पर्यावरण सुरक्षा के बारे में कुछ भी पूछें। मैं स्पष्ट, कार्ययोग्य मार्गदर्शन दूँगा।',
-    mr: 'ज्येष्ठ नागरिकांच्या पर्यावरण सुरक्षेबद्दल काहीही विचारा. मी स्पष्ट, कृतीयोग्य मार्गदर्शन देईन.',
-  },
-  typeMessage: {
-    en: 'Ask about safety, weather, air quality...',
-    hi: 'सुरक्षा, मौसम, वायु गुणवत्ता के बारे में पूछें...',
-    mr: 'सुरक्षा, हवामान, हवेच्या गुणवत्तेबद्दल विचारा...',
-  },
+  // Safety
+  seniorSafetyIndex: 'safety.index',
+  safetyIndex: 'safety.safetyIndex',
+  realtimeSafetyAssessment: 'safety.assessment',
+  keyConcerns: 'safety.keyConcerns',
+  whatToDo: 'safety.whatToDo',
 
-  // ── Risk Levels ──
-  riskLow: {
-    en: 'LOW',
-    hi: 'कम',
-    mr: 'कमी',
-  },
-  riskModerate: {
-    en: 'MODERATE',
-    hi: 'मध्यम',
-    mr: 'मध्यम',
-  },
-  riskHigh: {
-    en: 'HIGH',
-    hi: 'उच्च',
-    mr: 'उच्च',
-  },
+  // Chat
+  chatAssistant: 'chat.assistant',
+  chatSubtitle: 'chat.subtitle',
+  chatWelcome: 'chat.welcome',
+  chatPlaceholder: 'chat.placeholder',
+  typeMessage: 'chat.typeMessage',
 
-  // ── Risk Factors ──
-  airQuality: {
-    en: 'Air Quality',
-    hi: 'वायु गुणवत्ता',
-    mr: 'हवेची गुणवत्ता',
-  },
-  thermalComfort: {
-    en: 'Thermal Comfort',
-    hi: 'तापमान आराम',
-    mr: 'तापमान आराम',
-  },
-  humidity: {
-    en: 'Humidity',
-    hi: 'नमी',
-    mr: 'आर्द्रता',
-  },
-  uvExposure: {
-    en: 'UV Exposure',
-    hi: 'UV किरणें',
-    mr: 'UV किरणे',
-  },
-  floodRisk: {
-    en: 'Flood / Waterlogging',
-    hi: 'बाढ़ / जलभराव',
-    mr: 'पूर / पाणी साचणे',
-  },
-  noisePollution: {
-    en: 'Noise Pollution',
-    hi: 'ध्वनि प्रदूषण',
-    mr: 'ध्वनी प्रदूषण',
-  },
+  // Daily
+  morning: 'daily.morning',
+  afternoon: 'daily.afternoon',
+  evening: 'daily.evening',
+  dailySafetyGuide: 'daily.guide',
+  dailySummary: 'daily.summary',
+  forecastAlerts: 'daily.forecastAlerts',
+  recommendations: 'daily.recommendations',
+  alerts: 'daily.alerts',
 
-  // ── Environment Snapshot Labels ──
-  temperature: {
-    en: 'Temperature',
-    hi: 'तापमान',
-    mr: 'तापमान',
-  },
-  feelsLike: {
-    en: 'Feels Like',
-    hi: 'महसूस होता है',
-    mr: 'जाणवते',
-  },
-  wind: {
-    en: 'Wind',
-    hi: 'हवा',
-    mr: 'वारा',
-  },
-  visibility: {
-    en: 'Visibility',
-    hi: 'दृश्यता',
-    mr: 'दृश्यमानता',
-  },
-  rainfall: {
-    en: 'Rainfall',
-    hi: 'वर्षा',
-    mr: 'पाऊस',
-  },
-  noise: {
-    en: 'Noise',
-    hi: 'शोर',
-    mr: 'आवाज',
-  },
-  uvIndex: {
-    en: 'UV Index',
-    hi: 'UV सूचकांक',
-    mr: 'UV निर्देशांक',
-  },
-  aqi: {
-    en: 'AQI',
-    hi: 'वायु गुणवत्ता सूचकांक',
-    mr: 'हवा गुणवत्ता निर्देशांक',
-  },
-  environmentSnapshot: {
-    en: 'Environment Snapshot',
-    hi: 'पर्यावरण स्नैपशॉट',
-    mr: 'पर्यावरण स्नॅपशॉट',
-  },
-  safetyIndex: {
-    en: 'Safety Index',
-    hi: 'सुरक्षा सूचकांक',
-    mr: 'सुरक्षा निर्देशांक',
-  },
-  seniorSafetyIndex: {
-    en: 'Senior Environmental Safety Index',
-    hi: 'वरिष्ठ पर्यावरण सुरक्षा सूचकांक',
-    mr: 'ज्येष्ठ पर्यावरण सुरक्षा निर्देशांक',
-  },
-  dailySummary: {
-    en: 'Daily Summary',
-    hi: 'दैनिक सारांश',
-    mr: 'दैनंदिन सारांश',
-  },
-  recommendations: {
-    en: 'Recommendations',
-    hi: 'सिफारिशें',
-    mr: 'शिफारसी',
-  },
-  alerts: {
-    en: 'Alerts',
-    hi: 'चेतावनियाँ',
-    mr: 'सूचना',
-  },
-  loading: {
-    en: 'Loading...',
-    hi: 'लोड हो रहा है...',
-    mr: 'लोड होत आहे...',
-  },
+  // Risk
+  detailedRiskAnalysis: 'risk.detailedAnalysis',
+  riskScore: 'risk.score',
+  topConcern: 'risk.topConcern',
+  riskFactorBreakdown: 'risk.breakdown',
+  riskLow: 'risk.low',
+  riskModerate: 'risk.moderate',
+  riskHigh: 'risk.high',
+  riskDistribution: 'risk.distribution',
 
-  // ── Map Explorer ──
-  mapExplorerTitle: {
-    en: 'Map Explorer',
-    hi: 'नक्शा एक्सप्लोरर',
-    mr: 'नकाशा एक्सप्लोरर',
-  },
-  clickMapToExplore: {
-    en: 'Click on the map to explore environmental data for any location',
-    hi: 'किसी भी स्थान का पर्यावरण डेटा देखने के लिए नक्शे पर क्लिक करें',
-    mr: 'कोणत्याही ठिकाणाचा पर्यावरण डेटा पाहण्यासाठी नकाशावर क्लिक करा',
-  },
-  data: {
-    en: 'Data',
-    hi: 'डेटा',
-    mr: 'डेटा',
-  },
-  searchLocations: {
-    en: 'Search locations...',
-    hi: 'स्थान खोजें...',
-    mr: 'ठिकाणे शोधा...',
-  },
-  quick: {
-    en: 'Quick:',
-    hi: 'त्वरित:',
-    mr: 'त्वरित:',
-  },
-  morning: {
-    en: 'Morning',
-    hi: 'सुबह',
-    mr: 'सकाळ',
-  },
-  afternoon: {
-    en: 'Afternoon',
-    hi: 'दोपहर',
-    mr: 'दुपार',
-  },
-  evening: {
-    en: 'Evening',
-    hi: 'शाम',
-    mr: 'संध्याकाळ',
-  },
-  dailySafetyGuide: {
-    en: 'Daily Safety Guide',
-    hi: 'दैनिक सुरक्षा गाइड',
-    mr: 'दैनंदिन सुरक्षा मार्गदर्शक',
-  },
-  forecastAlerts: {
-    en: 'Forecast Alerts',
-    hi: 'पूर्वानुमान चेतावनियाँ',
-    mr: 'अंदाज सूचना',
-  },
-  keyConcerns: {
-    en: 'Key Concerns',
-    hi: 'मुख्य चिंताएँ',
-    mr: 'प्रमुख चिंता',
-  },
-  whatToDo: {
-    en: 'What To Do',
-    hi: 'क्या करें',
-    mr: 'काय करावे',
-  },
-  realtimeSafetyAssessment: {
-    en: 'Real-time safety assessment',
-    hi: 'वास्तविक समय सुरक्षा मूल्यांकन',
-    mr: 'रिअल-टाइम सुरक्षा मूल्यांकन',
-  },
-  aqiTrend: {
-    en: 'Air Quality Trend (7 Days)',
-    hi: 'वायु गुणवत्ता रुझान (7 दिन)',
-    mr: 'हवा गुणवत्ता ट्रेंड (7 दिवस)',
-  },
-  tempTrend: {
-    en: 'Temperature Trend (7 Days)',
-    hi: 'तापमान रुझान (7 दिन)',
-    mr: 'तापमान ट्रेंड (7 दिवस)',
-  },
-  riskFactorBreakdown: {
-    en: 'Risk Factor Breakdown',
-    hi: 'जोखिम कारक विश्लेषण',
-    mr: 'धोका घटक विश्लेषण',
-  },
-  safetyScoreHistory: {
-    en: 'Safety Score History',
-    hi: 'सुरक्षा स्कोर इतिहास',
-    mr: 'सुरक्षा स्कोर इतिहास',
-  },
+  // Dashboard
+  environmentalDashboard: 'dashboard.title',
+  areaWiseMonitoring: 'dashboard.areaMonitoring',
+  areaWiseSafetyStatus: 'dashboard.safetyStatus',
+  aqiTrend: 'dashboard.aqiTrend',
+  tempTrend: 'dashboard.tempTrend',
+  safetyScoreHistory: 'dashboard.safetyHistory',
+  dashboardFooter: 'dashboard.footer',
+  historicalTrends: 'dashboard.historicalTrends',
+
+  // Explore
+  mapExplorerTitle: 'explore.title',
+  clickMapToExplore: 'explore.clickToExplore',
+  searchLocations: 'explore.searchLocations',
+  data: 'explore.data',
+  quick: 'explore.quick',
 };
 
 /**
  * Get translated string for a key and language.
  * Falls back to English if translation not found.
  */
-export function t(key: string, lang: Language = 'en'): string {
-  return T[key]?.[lang] ?? T[key]?.['en'] ?? key;
+export function t(key: string, lang: string = 'en'): string {
+  const msgs = allMessages[lang] || allMessages.en;
+  const namespacedKey = FLAT_KEY_MAP[key] || key;
+  const result = resolve(msgs, namespacedKey);
+  // If the key wasn't found in target language, fall back to English
+  if (result === namespacedKey && lang !== 'en') {
+    return resolve(allMessages.en, namespacedKey);
+  }
+  return result;
 }
 
 /**
  * Translate a risk level label.
  */
-export function tRisk(level: string, lang: Language = 'en'): string {
-  const key = level === 'LOW' ? 'riskLow' : level === 'MODERATE' ? 'riskModerate' : level === 'HIGH' ? 'riskHigh' : '';
-  if (!key) return level;
-  return t(key, lang);
+export function tRisk(level: string, lang: string = 'en'): string {
+  const normalized = level.toLowerCase();
+  return t(`risk.${normalized}`, lang);
 }

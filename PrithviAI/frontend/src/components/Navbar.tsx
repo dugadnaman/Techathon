@@ -5,14 +5,14 @@
  * Glassmorphic top nav with smooth animations and theme toggle.
  */
 
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Home, Map, MessageCircle, BarChart3 } from 'lucide-react';
 import type { Language } from '@/types';
-import { getLanguageName } from '@/lib/utils';
 import { t } from '@/lib/translations';
 import ThemeToggle from '@/components/ThemeToggle';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 interface NavbarProps {
   language: Language;
@@ -23,10 +23,10 @@ export default function Navbar({ language, onLanguageChange }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const links = [
-    { href: '/', icon: <Home size={16} />, label: t('navHome', language) },
-    { href: '/explore', icon: <Map size={16} />, label: t('navMapExplorer', language) },
-    { href: '/chat', icon: <MessageCircle size={16} />, label: t('navAIChat', language) },
-    { href: '/dashboard', icon: <BarChart3 size={16} />, label: t('navDashboard', language) },
+    { href: '/' as const, icon: <Home size={16} />, label: t('navHome', language) },
+    { href: '/explore' as const, icon: <Map size={16} />, label: t('navMapExplorer', language) },
+    { href: '/chat' as const, icon: <MessageCircle size={16} />, label: t('navAIChat', language) },
+    { href: '/dashboard' as const, icon: <BarChart3 size={16} />, label: t('navDashboard', language) },
   ];
 
   return (
@@ -60,23 +60,7 @@ export default function Navbar({ language, onLanguageChange }: NavbarProps) {
 
           {/* Right Side: Language + Theme + Mobile Menu */}
           <div className="flex items-center gap-2">
-            {/* Language Switcher */}
-            <div className="hidden sm:flex items-center gap-0.5 bg-surface-secondary rounded-xl p-1">
-              {(['en', 'hi', 'mr'] as Language[]).map((lang) => (
-                <button
-                  key={lang}
-                  onClick={() => onLanguageChange(lang)}
-                  className={`px-2.5 py-1.5 text-xs rounded-lg transition-all ${
-                    language === lang
-                      ? 'bg-surface-card text-accent shadow-sm font-semibold'
-                      : 'text-content-secondary hover:text-content-primary'
-                  }`}
-                >
-                  {getLanguageName(lang)}
-                </button>
-              ))}
-            </div>
-
+            <LanguageSwitcher />
             <ThemeToggle />
 
             {/* Mobile Menu Button */}
@@ -113,21 +97,8 @@ export default function Navbar({ language, onLanguageChange }: NavbarProps) {
                   <span className="font-medium">{link.label}</span>
                 </Link>
               ))}
-              {/* Mobile Language Switcher */}
-              <div className="flex items-center gap-1 pt-2 px-4">
-                {(['en', 'hi', 'mr'] as Language[]).map((lang) => (
-                  <button
-                    key={lang}
-                    onClick={() => onLanguageChange(lang)}
-                    className={`px-3 py-1.5 text-xs rounded-lg transition-all ${
-                      language === lang
-                        ? 'bg-accent/10 text-accent font-semibold'
-                        : 'text-content-secondary'
-                    }`}
-                  >
-                    {getLanguageName(lang)}
-                  </button>
-                ))}
+              <div className="pt-2 px-4">
+                <LanguageSwitcher />
               </div>
             </div>
           </motion.div>
