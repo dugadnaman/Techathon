@@ -86,20 +86,19 @@ export default function HomePage() {
       <main className="pt-16">
         <section className="border-b border-surface-secondary bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_55%)]">
           <div className="max-w-6xl mx-auto px-4 py-14 md:py-20">
-            <p className="text-sm font-medium text-accent">Round 1 MVP</p>
             <h1 className="mt-3 text-3xl md:text-5xl font-bold text-content-primary leading-tight">
-              PrithviAI Environmental Intelligence Prototype
+              PrithviAI Environmental Intelligence
             </h1>
             <p className="mt-4 max-w-2xl text-content-secondary leading-relaxed">
-              A focused MVP demonstrating real-time environment monitoring, a basic safety score,
-              and location-based risk visibility for informed decisions.
+              Real-time environment monitoring, a basic safety score, and location-based risk
+              visibility for informed decisions.
             </p>
             <div className="mt-8">
               <Link
                 href="/dashboard"
                 className="inline-flex min-h-[44px] items-center justify-center px-5 py-2.5 rounded-xl bg-accent text-white font-medium"
               >
-                Explore Prototype
+                Explore Dashboard
               </Link>
             </div>
           </div>
@@ -203,22 +202,10 @@ export default function HomePage() {
           <div className="glass-card-solid rounded-2xl p-6 border border-surface-secondary">
             <h3 className="text-xl font-semibold text-content-primary">Project Roadmap</h3>
             <ul className="mt-4 space-y-3 text-sm text-content-secondary">
-              <li className="flex items-center justify-between border-b border-surface-secondary pb-2">
-                <span>Heatmap Visualization</span>
-                <span className="text-content-secondary font-medium">Planned</span>
-              </li>
-              <li className="flex items-center justify-between border-b border-surface-secondary pb-2">
-                <span>Senior Mode</span>
-                <span className="text-content-secondary font-medium">Planned</span>
-              </li>
-              <li className="flex items-center justify-between border-b border-surface-secondary pb-2">
-                <span>24h Risk Timeline</span>
-                <span className="text-content-secondary font-medium">Coming Soon</span>
-              </li>
-              <li className="flex items-center justify-between">
-                <span>AI Advisory Layer</span>
-                <span className="text-content-secondary font-medium">Planned</span>
-              </li>
+              <li className="border-b border-surface-secondary pb-2">Heatmap Visualization</li>
+              <li className="border-b border-surface-secondary pb-2">Senior Mode</li>
+              <li className="border-b border-surface-secondary pb-2">24h Risk Timeline</li>
+              <li>AI Advisory Layer</li>
             </ul>
           </div>
         </section>

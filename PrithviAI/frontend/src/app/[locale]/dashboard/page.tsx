@@ -87,7 +87,7 @@ export default function DashboardPage() {
           <div>
             <h1 className="text-3xl font-bold text-content-primary">Basic Dashboard</h1>
             <p className="text-sm text-content-secondary mt-1">
-              Round 1 MVP monitoring view for key environmental indicators.
+              Monitoring view for key environmental indicators.
             </p>
           </div>
           <div className="flex items-center gap-2">

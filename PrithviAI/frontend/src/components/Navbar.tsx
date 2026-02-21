@@ -8,7 +8,7 @@
 import { Link } from '@/i18n/routing';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Home, BarChart3 } from 'lucide-react';
+import { Menu, X, Home, Map, MessageCircle, BarChart3 } from 'lucide-react';
 import type { Language } from '@/types';
 import { t } from '@/lib/translations';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -24,6 +24,8 @@ export default function Navbar({ language, onLanguageChange }: NavbarProps) {
 
   const links = [
     { href: '/' as const, icon: <Home size={16} />, label: t('navHome', language) },
+    { href: '/explore' as const, icon: <Map size={16} />, label: t('navMapExplorer', language) },
+    { href: '/chat' as const, icon: <MessageCircle size={16} />, label: t('navAIChat', language) },
     { href: '/dashboard' as const, icon: <BarChart3 size={16} />, label: t('navDashboard', language) },
   ];
 

@@ -16,7 +16,7 @@ export default function ChatPage() {
         <div className="glass-card-solid rounded-2xl border border-surface-secondary p-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-content-primary">AI Advisory</h1>
           <p className="mt-3 text-content-secondary">
-            AI chat is not included in this Round 1 MVP (frontend-only scope).
+            This section is currently unavailable.
           </p>
           <Link
             href="/dashboard"
