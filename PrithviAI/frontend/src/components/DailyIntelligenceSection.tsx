@@ -53,40 +53,41 @@ interface BestWindow {
 
 function computeBestWindow(points: ForecastPoint[], language: Language): BestWindow {
   // Find longest consecutive LOW window during 5am-9pm
-  const daytime = points.filter((p) => {
-    const h = new Date(p.time).getHours();
-    return h >= 5 && h <= 21;
-  });
+  const daytime = [...points]
+    .map((point) => ({ point, date: new Date(point.time) }))
+    .filter(({ date }) => {
+      const hour = date.getHours();
+      return hour >= 5 && hour <= 21;
+    })
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
 
   if (daytime.length === 0) {
     return { found: false, timeRange: '', level: 'HIGH', advisory: t('daily.noForecastData', language) };
   }
 
-  let bestStart = -1;
-  let bestLen = 0;
-  let curStart = -1;
-  let curLen = 0;
+  function findBestRun(
+    predicate: (level: RiskLevel) => boolean,
+  ): { start: number; len: number } {
+    let bestStart = -1;
+    let bestLen = 0;
+    let curStart = -1;
+    let curLen = 0;
 
-  for (let i = 0; i < daytime.length; i++) {
-    if (daytime[i].predicted_level === 'LOW') {
-      if (curStart === -1) curStart = i;
-      curLen++;
-      if (curLen > bestLen) {
-        bestLen = curLen;
-        bestStart = curStart;
-      }
-    } else {
-      curStart = -1;
-      curLen = 0;
-    }
-  }
-
-  // If no LOW window, look for MODERATE
-  if (bestLen === 0) {
     for (let i = 0; i < daytime.length; i++) {
-      if (daytime[i].predicted_level !== 'HIGH') {
-        if (curStart === -1) curStart = i;
-        curLen++;
+      const qualifies = predicate(daytime[i].point.predicted_level);
+
+      const prev = i > 0 ? daytime[i - 1].date.getTime() : null;
+      const now = daytime[i].date.getTime();
+      const gapMs = prev == null ? 0 : now - prev;
+      const isConsecutiveHour = prev == null ? false : gapMs > 0 && gapMs <= 90 * 60 * 1000;
+
+      if (qualifies) {
+        if (curStart === -1 || !isConsecutiveHour) {
+          curStart = i;
+          curLen = 1;
+        } else {
+          curLen += 1;
+        }
         if (curLen > bestLen) {
           bestLen = curLen;
           bestStart = curStart;
@@ -96,7 +97,14 @@ function computeBestWindow(points: ForecastPoint[], language: Language): BestWin
         curLen = 0;
       }
     }
+
+    return { start: bestStart, len: bestLen };
   }
+
+  const lowRun = findBestRun((level) => level === 'LOW');
+  const fallbackRun = lowRun.len > 0 ? lowRun : findBestRun((level) => level !== 'HIGH');
+  const bestStart = fallbackRun.start;
+  const bestLen = fallbackRun.len;
 
   if (bestLen === 0 || bestStart === -1) {
     return {
@@ -107,12 +115,12 @@ function computeBestWindow(points: ForecastPoint[], language: Language): BestWin
     };
   }
 
-  const startTime = new Date(daytime[bestStart].time);
-  const endTime = new Date(daytime[Math.min(bestStart + bestLen - 1, daytime.length - 1)].time);
+  const startTime = new Date(daytime[bestStart].date);
+  const endTime = new Date(daytime[Math.min(bestStart + bestLen - 1, daytime.length - 1)].date);
   endTime.setHours(endTime.getHours() + 1);
 
   const fmt = (d: Date) => formatTime(d.toISOString(), language);
-  const windowLevel = daytime[bestStart].predicted_level;
+  const windowLevel = daytime[bestStart].point.predicted_level;
 
   return {
     found: true,
