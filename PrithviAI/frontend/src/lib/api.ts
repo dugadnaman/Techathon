@@ -6,7 +6,7 @@
 import type {
   SafetyIndex, EnvironmentData, ChatResponse,
   DailySummary, HealthAlert, AgeGroup, ActivityIntent,
-  Language, AreaData, TrendPoint, RiskDistribution,
+  Language, AreaData, TrendPoint, RiskDistribution, RiskLevel,
   Landmark, LocationData, MapChatResponse,
 } from '@/types';
 
@@ -14,6 +14,64 @@ const API_BASE = (process.env.NEXT_PUBLIC_API_URL || '').trim().replace(/\/+$/, 
 
 function toBackendAgeGroup(ageGroup: AgeGroup): 'elderly' | 'adult' {
   return ageGroup === 'child' ? 'adult' : ageGroup;
+}
+
+const CHILD_OVERALL_DELTA = 4;
+const CHILD_FACTOR_DELTA = 2;
+const CHILD_FORECAST_DELTA = 3;
+
+function clampScore(score: number): number {
+  return Math.min(100, Math.max(0, score));
+}
+
+function scoreToRiskLevel(score: number): RiskLevel {
+  if (score < 30) return 'LOW';
+  if (score < 60) return 'MODERATE';
+  return 'HIGH';
+}
+
+function adjustSafetyIndexForChild(safetyIndex: SafetyIndex): SafetyIndex {
+  const adjustedFactors = safetyIndex.all_risks.map((risk) => {
+    const adjustedScore = clampScore(risk.score + CHILD_FACTOR_DELTA);
+    return {
+      ...risk,
+      score: adjustedScore,
+      level: scoreToRiskLevel(adjustedScore),
+    };
+  });
+
+  const topRiskCount = safetyIndex.top_risks.length;
+  const adjustedTopRisks = topRiskCount > 0
+    ? [...adjustedFactors].sort((a, b) => b.score - a.score).slice(0, topRiskCount)
+    : [];
+
+  const adjustedOverallScore = clampScore(safetyIndex.overall_score + CHILD_OVERALL_DELTA);
+
+  return {
+    ...safetyIndex,
+    overall_score: adjustedOverallScore,
+    overall_level: scoreToRiskLevel(adjustedOverallScore),
+    all_risks: adjustedFactors,
+    top_risks: adjustedTopRisks,
+  };
+}
+
+function adjustDailySummaryForChild(summary: DailySummary): DailySummary {
+  return {
+    ...summary,
+    safety_index: adjustSafetyIndexForChild(summary.safety_index),
+    forecast: {
+      ...summary.forecast,
+      points: summary.forecast.points.map((point) => {
+        const adjustedScore = clampScore(point.predicted_score + CHILD_FORECAST_DELTA);
+        return {
+          ...point,
+          predicted_score: adjustedScore,
+          predicted_level: scoreToRiskLevel(adjustedScore),
+        };
+      }),
+    },
+  };
 }
 
 // ─── Generic Fetch Helper ────────────────────────────────
@@ -69,7 +127,7 @@ export async function assessRisk(
   language: Language = 'en',
 ): Promise<SafetyIndex> {
   const backendAgeGroup = toBackendAgeGroup(age_group);
-  return apiFetch('/api/risk/assess', {
+  const safetyIndex = await apiFetch<SafetyIndex>('/api/risk/assess', {
     method: 'POST',
     body: JSON.stringify({
       latitude: lat,
@@ -80,6 +138,7 @@ export async function assessRisk(
       language,
     }),
   });
+  return age_group === 'child' ? adjustSafetyIndexForChild(safetyIndex) : safetyIndex;
 }
 
 export async function getAlerts(
@@ -107,10 +166,11 @@ export async function getDailySummary(
   age_group: AgeGroup = 'elderly',
 ): Promise<DailySummary> {
   const backendAgeGroup = toBackendAgeGroup(age_group);
-  return apiFetch('/api/risk/daily-summary', {
+  const summary = await apiFetch<DailySummary>('/api/risk/daily-summary', {
     method: 'POST',
     body: JSON.stringify({ latitude: lat, longitude: lon, city, age_group: backendAgeGroup }),
   });
+  return age_group === 'child' ? adjustDailySummaryForChild(summary) : summary;
 }
 
 // ─── Chat Endpoints ──────────────────────────────────────
@@ -125,7 +185,7 @@ export async function sendChatMessage(
   session_id?: string,
 ): Promise<ChatResponse> {
   const backendAgeGroup = toBackendAgeGroup(age_group);
-  return apiFetch('/api/chat/message', {
+  const response = await apiFetch<ChatResponse>('/api/chat/message', {
     method: 'POST',
     body: JSON.stringify({
       message,
@@ -137,6 +197,13 @@ export async function sendChatMessage(
       session_id,
     }),
   });
+  if (age_group !== 'child' || !response.safety_index) return response;
+  const adjustedSafetyIndex = adjustSafetyIndexForChild(response.safety_index);
+  return {
+    ...response,
+    safety_index: adjustedSafetyIndex,
+    risk_level: adjustedSafetyIndex.overall_level,
+  };
 }
 
 export async function getChatSuggestions(): Promise<{ suggestions: string[] }> {
