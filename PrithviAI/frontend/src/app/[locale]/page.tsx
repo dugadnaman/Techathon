@@ -96,7 +96,7 @@ export default function HomePage() {
             </p>
             <div className="mt-8">
               <Link
-                href="/explore"
+                href="/dashboard"
                 className="inline-flex min-h-[44px] items-center justify-center px-5 py-2.5 rounded-xl bg-accent text-white font-medium"
               >
                 Explore Prototype
@@ -205,11 +205,11 @@ export default function HomePage() {
             <ul className="mt-4 space-y-3 text-sm text-content-secondary">
               <li className="flex items-center justify-between border-b border-surface-secondary pb-2">
                 <span>Heatmap Visualization</span>
-                <span className="text-amber-400 font-medium">In Progress</span>
+                <span className="text-content-secondary font-medium">Planned</span>
               </li>
               <li className="flex items-center justify-between border-b border-surface-secondary pb-2">
                 <span>Senior Mode</span>
-                <span className="text-amber-400 font-medium">In Progress</span>
+                <span className="text-content-secondary font-medium">Planned</span>
               </li>
               <li className="flex items-center justify-between border-b border-surface-secondary pb-2">
                 <span>24h Risk Timeline</span>

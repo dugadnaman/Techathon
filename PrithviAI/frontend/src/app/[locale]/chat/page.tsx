@@ -1,77 +1,31 @@
 'use client';
 
-/**
- * Prithvi — AI Chat Page
- * Premium full-page chat interface with glass styling.
- */
-
-import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { useLocale } from 'next-intl';
 import Navbar from '@/components/Navbar';
-import ChatInterface from '@/components/ChatInterface';
-import type { Language, AgeGroup } from '@/types';
-import { MapPin, UserCircle } from 'lucide-react';
-import { t } from '@/lib/translations';
-
-const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
+import { Link } from '@/i18n/routing';
+import type { Language } from '@/types';
 
 export default function ChatPage() {
-  const locale = useLocale();
-  const language = locale as Language;
-  const [ageGroup, setAgeGroup] = useState<AgeGroup>('elderly');
-  const [city, setCity] = useState('Pune');
+  const language = useLocale() as Language;
 
   return (
-    <>
+    <div className="min-h-screen bg-surface-primary">
       <Navbar language={language} onLanguageChange={() => {}} />
 
-      <main className="pt-20 pb-6 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
-        {/* Controls */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: EASE_OUT }}
-          className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-4"
-        >
-          <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-3 py-2 min-h-[44px]">
-            <MapPin size={14} className="text-accent" />
-            <select
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              className="text-sm text-content-primary bg-transparent outline-none cursor-pointer w-full"
-            >
-              <option value="Pune">Pune</option>
-              <option value="Mumbai">Mumbai</option>
-              <option value="Delhi">Delhi</option>
-              <option value="Bangalore">Bangalore</option>
-              <option value="Chennai">Chennai</option>
-            </select>
-          </div>
-
-          <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-3 py-2 min-h-[44px]">
-            <UserCircle size={14} className="text-accent" />
-            <select
-              value={ageGroup}
-              onChange={(e) => setAgeGroup(e.target.value as AgeGroup)}
-              className="text-sm text-content-primary bg-transparent outline-none cursor-pointer w-full"
-            >
-              <option value="elderly">{t('seniorCitizen', language)}</option>
-              <option value="adult">{t('adult', language)}</option>
-              <option value="child">{t('child', language)}</option>
-            </select>
-          </div>
-        </motion.div>
-
-        {/* Chat Interface */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1, ease: EASE_OUT }}
-        >
-          <ChatInterface language={language} ageGroup={ageGroup} city={city} />
-        </motion.div>
+      <main className="pt-20 pb-10 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+        <div className="glass-card-solid rounded-2xl border border-surface-secondary p-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-content-primary">AI Advisory</h1>
+          <p className="mt-3 text-content-secondary">
+            AI chat is not included in this Round 1 MVP (frontend-only scope).
+          </p>
+          <Link
+            href="/dashboard"
+            className="mt-5 inline-flex min-h-[44px] items-center justify-center px-5 py-2.5 rounded-xl bg-accent text-white font-medium"
+          >
+            Go to Dashboard
+          </Link>
+        </div>
       </main>
-    </>
+    </div>
   );
 }
