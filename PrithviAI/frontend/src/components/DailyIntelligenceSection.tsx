@@ -2,16 +2,15 @@
 
 /**
  * Prithvi — Daily Intelligence Section
- * Three-module predictive intelligence panel:
- * 1. 24-Hour Risk Timeline
- * 2. Best Time to Go Outside
- * 3. Primary Concern of the Day
+ * Predictive intelligence panel:
+ * 1. Best Time to Go Outside
+ * 2. Primary Concern of the Day
  */
 
 import { useMemo } from 'react';
 import { useLocale } from 'next-intl';
 import { motion } from 'framer-motion';
-import { Clock, Sun, Shield, TrendingUp, TrendingDown, Minus, AlertTriangle } from 'lucide-react';
+import { Sun, Shield, TrendingUp, TrendingDown, Minus, AlertTriangle } from 'lucide-react';
 import { RevealSection, StaggerContainer, StaggerItem } from '@/components/motion';
 import type { ForecastPoint, SafetyIndex, RiskLevel, Language } from '@/types';
 import { t, tFormat, tRisk } from '@/lib/translations';
@@ -43,68 +42,6 @@ function riskText(level: RiskLevel): string {
     case 'HIGH': return 'text-risk-high';
     default: return 'text-content-secondary';
   }
-}
-
-interface TimeBlock {
-  label: string;
-  icon: string;
-  level: RiskLevel;
-  score: number;
-  hours: string;
-  isPeak: boolean;
-}
-
-function computeTimeBlocks(points: ForecastPoint[], language: Language): TimeBlock[] {
-  const blocks: { label: string; icon: string; hours: string; range: [number, number] }[] = [
-    { label: t('daily.morning', language), icon: '🌅', hours: t('daily.hoursMorning', language), range: [6, 12] },
-    { label: t('daily.afternoon', language), icon: '☀️', hours: t('daily.hoursAfternoon', language), range: [12, 17] },
-    { label: t('daily.evening', language), icon: '🌆', hours: t('daily.hoursEvening', language), range: [17, 21] },
-    { label: t('daily.night', language), icon: '🌙', hours: t('daily.hoursNight', language), range: [21, 30] },
-  ];
-
-  const result: TimeBlock[] = [];
-  let worstScore = -1;
-  let worstIdx = -1;
-
-  for (let i = 0; i < blocks.length; i++) {
-    const b = blocks[i];
-    const matching = points.filter((p) => {
-      const hour = new Date(p.time).getHours();
-      if (b.range[0] <= 23 && b.range[1] <= 24) {
-        return hour >= b.range[0] && hour < b.range[1];
-      }
-      // Night wraps around
-      return hour >= b.range[0] || hour < (b.range[1] - 24);
-    });
-
-    let avgScore = 50;
-    let level: RiskLevel = 'MODERATE';
-    if (matching.length > 0) {
-      avgScore = Math.round(matching.reduce((s, p) => s + p.predicted_score, 0) / matching.length);
-      const highCount = matching.filter((p) => p.predicted_level === 'HIGH').length;
-      const lowCount = matching.filter((p) => p.predicted_level === 'LOW').length;
-      if (highCount > matching.length / 2) level = 'HIGH';
-      else if (lowCount > matching.length / 2) level = 'LOW';
-      else level = 'MODERATE';
-    }
-
-    if (avgScore > worstScore) {
-      worstScore = avgScore;
-      worstIdx = i;
-    }
-
-    result.push({
-      label: b.label,
-      icon: b.icon,
-      level,
-      score: avgScore,
-      hours: b.hours,
-      isPeak: false,
-    });
-  }
-
-  if (worstIdx >= 0) result[worstIdx].isPeak = true;
-  return result;
 }
 
 interface BestWindow {
@@ -236,53 +173,6 @@ function computePrimaryConcern(
 
 // ─── Sub-components ──────────────────────────────────────
 
-function RiskTimeline({ blocks, language }: { blocks: TimeBlock[]; language: Language }) {
-  return (
-    <div className="glass-card-solid rounded-2xl p-5">
-      <div className="flex items-center gap-2 mb-4">
-        <Clock size={16} className="text-accent" />
-        <h3 className="text-sm font-bold text-content-primary tracking-tight">{t('daily.riskTimeline24h', language)}</h3>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {blocks.map((block, i) => (
-          <motion.div
-            key={block.label}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: i * 0.08, ease: EASE_OUT }}
-            className={`relative rounded-xl p-3 text-center border transition-colors ${
-              block.isPeak
-                ? 'border-risk-high/30 bg-risk-high/5'
-                : 'border-transparent bg-surface-secondary/40'
-            }`}
-          >
-            {block.isPeak && (
-              <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold bg-risk-high text-white px-2 py-0.5 rounded-full">
-                {t('daily.peak', language)}
-              </span>
-            )}
-            <div className="text-lg mb-1">{block.icon}</div>
-            <div className="text-xs font-semibold text-content-primary mb-1">{block.label}</div>
-            {/* Risk bar */}
-            <div className="w-full h-1.5 bg-surface-secondary rounded-full overflow-hidden mb-1.5">
-              <motion.div
-                className={`h-full rounded-full ${riskColor(block.level)}`}
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(block.score, 100)}%` }}
-                transition={{ duration: 0.8, delay: 0.2 + i * 0.1, ease: EASE_OUT }}
-              />
-            </div>
-            <div className={`text-xs font-bold ${riskText(block.level)}`}>
-              {tRisk(block.level, language)}
-            </div>
-            <div className="text-[10px] text-content-secondary mt-0.5">{block.hours}</div>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function BestTimeAdvisory({ window, language }: { window: BestWindow; language: Language }) {
   return (
     <div className="glass-card-solid rounded-2xl p-5 flex flex-col justify-between h-full">
@@ -370,7 +260,6 @@ export default function DailyIntelligenceSection({
   previousScore,
 }: DailyIntelligenceSectionProps) {
   const locale = useLocale() as Language;
-  const timeBlocks = useMemo(() => computeTimeBlocks(forecastPoints, locale), [forecastPoints, locale]);
   const bestWindow = useMemo(() => computeBestWindow(forecastPoints, locale), [forecastPoints, locale]);
   const primaryConcern = useMemo(() => computePrimaryConcern(safetyIndex, previousScore), [safetyIndex, previousScore]);
 
@@ -386,11 +275,6 @@ export default function DailyIntelligenceSection({
       </RevealSection>
 
       <StaggerContainer className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Timeline spans full width on mobile, 1 col on desktop */}
-        <StaggerItem className="lg:col-span-3">
-          <RiskTimeline blocks={timeBlocks} language={locale} />
-        </StaggerItem>
-
         <StaggerItem>
           <BestTimeAdvisory window={bestWindow} language={locale} />
         </StaggerItem>
