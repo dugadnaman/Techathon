@@ -196,7 +196,7 @@ export default function HomePage() {
       />
 
       {/* ═══════════════ CONTROLS BAR ═══════════════ */}
-      <section className="py-3 px-3 sm:px-4 max-w-5xl mx-auto">
+      <section className="py-2 px-3 sm:px-4 max-w-5xl mx-auto">
         <RevealSection>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
             <div className="flex items-center gap-2 glass-card-solid rounded-2xl px-3 py-2.5 min-h-[44px]">

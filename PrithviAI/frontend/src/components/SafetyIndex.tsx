@@ -126,7 +126,7 @@ export default function SafetyIndexDisplay({ safetyIndex, loading, language = 'e
         transition={{ duration: 0.5, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="text-center mb-4"
       >
-        <p className="text-sm text-content-secondary leading-relaxed">{summary}</p>
+        <p className="text-sm text-content-primary/90 leading-relaxed">{summary}</p>
       </motion.div>
 
       {/* Top Risks */}
@@ -149,7 +149,7 @@ export default function SafetyIndexDisplay({ safetyIndex, loading, language = 'e
                   <span className="text-xl">{risk.icon}</span>
                   <div>
                     <span className="font-medium text-content-primary text-sm">{risk.name}</span>
-                    <p className="text-xs text-content-secondary mt-0.5">{risk.reason}</p>
+                    <p className="text-xs text-content-primary/80 mt-0.5">{risk.reason}</p>
                   </div>
                 </div>
                 <span className={`text-base font-extrabold tracking-tight ${getRiskColor(risk.level)}`}>
@@ -169,7 +169,7 @@ export default function SafetyIndexDisplay({ safetyIndex, loading, language = 'e
           </h3>
           <div className="space-y-2">
             {recommendations.slice(0, 4).map((rec, idx) => (
-              <div key={idx} className="flex items-start gap-2 text-sm text-content-secondary">
+              <div key={idx} className="flex items-start gap-2 text-sm text-content-primary/90">
                 <span className="text-accent mt-0.5">•</span>
                 <span>{rec}</span>
               </div>

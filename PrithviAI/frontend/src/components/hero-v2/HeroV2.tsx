@@ -115,7 +115,7 @@ export default function HeroV2({
         {/* Hero Content */}
         <div
           className="flex flex-col items-center text-center mx-auto px-4 sm:px-6"
-          style={{ maxWidth: 900, marginTop: isMobile ? 56 : 92 }}
+          style={{ maxWidth: 900, marginTop: isMobile ? 56 : 92, paddingBottom: isMobile ? 72 : 96 }}
         >
           {/* Heading */}
           <motion.div
@@ -260,9 +260,9 @@ export default function HeroV2({
       <div
         className="absolute bottom-0 left-0 right-0 pointer-events-none"
         style={{
-          height: 200,
-          background: 'linear-gradient(to top, var(--bg-primary, #0F172A) 0%, transparent 100%)',
-          zIndex: 6,
+          height: isMobile ? 120 : 150,
+          background: 'linear-gradient(to top, rgba(15,23,42,0.55) 0%, rgba(15,23,42,0.0) 100%)',
+          zIndex: 2,
         }}
       />
     </section>
