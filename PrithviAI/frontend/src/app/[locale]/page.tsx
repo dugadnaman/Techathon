@@ -296,13 +296,6 @@ export default function HomePage() {
         )}
       </AnimatePresence>
 
-      {/* ═══════════════ ALERTS ═══════════════ */}
-      {alerts.length > 0 && (
-        <div className="max-w-5xl mx-auto px-4 mb-4">
-          <AlertBanner alerts={alerts} />
-        </div>
-      )}
-
       {/* ═══════════════ ENVIRONMENT DATA ═══════════════ */}
       <section id="environment-data" className="py-3 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <RevealSection>
@@ -316,17 +309,12 @@ export default function HomePage() {
         </RevealSection>
       </section>
 
-      {/* ═══════════════ DAILY SUMMARY + ENVIRONMENT GLANCE ═══════════════ */}
-      <section className="py-2 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <RevealSection>
-            <DailySummaryCard summary={dailySummary} loading={loading} language={language} />
-          </RevealSection>
-          <RevealSection delay={0.05}>
-            <EnvironmentAtGlance data={envData} />
-          </RevealSection>
+      {/* ═══════════════ ALERTS ═══════════════ */}
+      {alerts.length > 0 && (
+        <div className="max-w-5xl mx-auto px-4 mb-4">
+          <AlertBanner alerts={alerts} />
         </div>
-      </section>
+      )}
 
       {/* ═══════════════ DAILY INTELLIGENCE ═══════════════ */}
       {(dailySummary?.forecast || safetyIndex) && (
@@ -356,6 +344,18 @@ export default function HomePage() {
           </StaggerContainer>
         </section>
       )}
+
+      {/* ═══════════════ DAILY SUMMARY + ENVIRONMENT GLANCE ═══════════════ */}
+      <section className="py-2 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <RevealSection>
+            <DailySummaryCard summary={dailySummary} loading={loading} language={language} />
+          </RevealSection>
+          <RevealSection delay={0.05}>
+            <EnvironmentAtGlance data={envData} />
+          </RevealSection>
+        </div>
+      </section>
 
       {/* ═══════════════ FORECAST ═══════════════ */}
       {dailySummary?.forecast && (
