@@ -16,6 +16,7 @@ import Navbar from '@/components/Navbar';
 import { getMapLandmarks, getLocationData } from '@/lib/api';
 import { t } from '@/lib/translations';
 import type { Landmark, LocationData, RiskLevel, Language } from '@/types';
+import { MapProvider } from '@/features/map-engine/context/MapContext';
 
 const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -98,8 +99,9 @@ export default function MapExplorerPage() {
   }, [landmarks, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-surface-primary pt-16">
-      <Navbar language={language} onLanguageChange={() => {}} />
+    <MapProvider initialLocation={selectedLocation}>
+      <div className="min-h-screen bg-surface-primary pt-16">
+        <Navbar language={language} onLanguageChange={() => {}} />
 
       {/* Page Header */}
       <div className="glass-card-solid border-b border-surface-secondary">
@@ -275,6 +277,7 @@ export default function MapExplorerPage() {
           })}
         </div>
       </div>
-    </div>
+      </div>
+    </MapProvider>
   );
 }

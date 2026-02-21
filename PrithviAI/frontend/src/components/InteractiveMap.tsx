@@ -2,43 +2,26 @@
 
 /**
  * Prithvi — Interactive Map Component
- * Leaflet map with dark/light tile support and theme-aware styling.
+ * Leaflet map shell that delegates layer rendering to LayerManager.
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
+import { useEffect, useMemo, useState, useCallback } from 'react';
+import { MapContainer, TileLayer, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import type { Landmark } from '@/types';
-import { getRiskHexColor } from '@/lib/utils';
-import type { RiskLevel } from '@/types';
+import type { Landmark, RiskLevel } from '@/types';
+import { LayerManager } from '@/features/map-engine/layers/LayerManager';
+import { useMapContext } from '@/features/map-engine/context/MapContext';
+import type { MapPointData } from '@/features/map-engine/layers/types';
+import type { MapMetric } from '@/features/map-engine/context/MapContext';
 
 import 'leaflet/dist/leaflet.css';
 
-// Fix Leaflet default icon issue with Next.js
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
-
-function createColoredIcon(color: string, isSelected = false): L.DivIcon {
-  const size = isSelected ? 18 : 12;
-  const border = isSelected ? 4 : 3;
-  return L.divIcon({
-    className: 'custom-marker',
-    html: `<div style="
-      width: ${size}px; height: ${size}px;
-      background: ${color};
-      border: ${border}px solid white;
-      border-radius: 50%;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-      ${isSelected ? 'animation: pulse 1.5s ease infinite;' : ''}
-    "></div>`,
-    iconSize: [size + border * 2, size + border * 2],
-    iconAnchor: [(size + border * 2) / 2, (size + border * 2) / 2],
-  });
-}
 
 function MapClickHandler({ onMapClick }: { onMapClick: (lat: number, lon: number) => void }) {
   useMapEvents({
@@ -54,6 +37,44 @@ function FlyToLocation({ lat, lon }: { lat: number; lon: number }) {
   useEffect(() => {
     map.flyTo([lat, lon], 14, { duration: 1 });
   }, [lat, lon, map]);
+  return null;
+}
+
+function MapViewportBridge() {
+  const { setVisibleBounds } = useMapContext();
+  const map = useMap();
+
+  useEffect(() => {
+    const bounds = map.getBounds();
+    setVisibleBounds({
+      north: bounds.getNorth(),
+      south: bounds.getSouth(),
+      east: bounds.getEast(),
+      west: bounds.getWest(),
+    });
+  }, [map, setVisibleBounds]);
+
+  useMapEvents({
+    moveend: (event) => {
+      const bounds = event.target.getBounds();
+      setVisibleBounds({
+        north: bounds.getNorth(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        west: bounds.getWest(),
+      });
+    },
+    zoomend: (event) => {
+      const bounds = event.target.getBounds();
+      setVisibleBounds({
+        north: bounds.getNorth(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        west: bounds.getWest(),
+      });
+    },
+  });
+
   return null;
 }
 
@@ -74,8 +95,16 @@ export default function InteractiveMap({
 }: InteractiveMapProps) {
   const [clickedPos, setClickedPos] = useState<{ lat: number; lon: number } | null>(null);
   const [isDark, setIsDark] = useState(false);
+  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
+  const [userLocation] = useState<{ lat: number; lon: number } | null>(null);
+  const [safestPoint] = useState<{ lat: number; lon: number; name: string } | null>(null);
 
-  // Detect dark mode
+  const {
+    selectedMetric,
+    selectedTimeIndex,
+    setSelectedLocation: setContextSelectedLocation,
+  } = useMapContext();
+
   useEffect(() => {
     const checkDark = () => setIsDark(document.documentElement.classList.contains('dark'));
     checkDark();
@@ -84,21 +113,72 @@ export default function InteractiveMap({
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    setContextSelectedLocation(selectedLocation);
+  }, [selectedLocation, setContextSelectedLocation]);
+
   const handleMapClick = useCallback(
     (lat: number, lon: number) => {
       setClickedPos({ lat, lon });
+      setContextSelectedLocation({ lat, lon, name: '' });
       onLocationSelect(lat, lon, '');
     },
-    [onLocationSelect],
+    [onLocationSelect, setContextSelectedLocation],
   );
 
   const handleLandmarkClick = useCallback(
     (lm: Landmark) => {
       setClickedPos({ lat: lm.lat, lon: lm.lon });
+      setContextSelectedLocation({ lat: lm.lat, lon: lm.lon, name: lm.name });
       onLocationSelect(lm.lat, lm.lon, lm.name);
     },
-    [onLocationSelect],
+    [onLocationSelect, setContextSelectedLocation],
   );
+
+  const handleClickedPointSelect = useCallback(
+    (lat: number, lon: number) => {
+      setContextSelectedLocation({ lat, lon, name: '' });
+      onLocationSelect(lat, lon, '');
+    },
+    [onLocationSelect, setContextSelectedLocation],
+  );
+
+  const points = useMemo<MapPointData[]>(() => {
+    return landmarks.map((lm) => {
+      const riskLevel = landmarkRiskLevels[lm.name] || 'MODERATE';
+      const baseScore = riskLevel === 'LOW' ? 25 : riskLevel === 'HIGH' ? 75 : 50;
+      const defaultSeries = Array.from({ length: 25 }, (_, hour) =>
+        Math.max(0, Math.min(100, baseScore + Math.round(Math.sin(hour / 24 * Math.PI * 2) * 5))),
+      );
+
+      return {
+        name: lm.name,
+        lat: lm.lat,
+        lon: lm.lon,
+        riskLevel,
+        primaryRisk: 'AQI',
+        alerts: [],
+        metricValues: {
+          aqi: baseScore * 2,
+          temperature: 22 + baseScore * 0.2,
+          uv: 2 + baseScore * 0.06,
+          rainfall: baseScore * 0.08,
+          humidity: 35 + baseScore * 0.5,
+          noise: 45 + baseScore * 0.4,
+          safety_score: baseScore,
+        },
+        metricHourly: {
+          aqi: defaultSeries.map((v) => v * 2),
+          temperature: defaultSeries.map((v) => 18 + v * 0.25),
+          uv: defaultSeries.map((v) => 1 + v * 0.08),
+          rainfall: defaultSeries.map((v) => v * 0.12),
+          humidity: defaultSeries.map((v) => 30 + v * 0.55),
+          noise: defaultSeries.map((v) => 40 + v * 0.5),
+          safety_score: defaultSeries,
+        } satisfies Record<MapMetric, number[]>,
+      };
+    });
+  }, [landmarks, landmarkRiskLevels]);
 
   const tileUrl = isDark
     ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
@@ -106,7 +186,6 @@ export default function InteractiveMap({
 
   return (
     <div className="relative w-full h-full rounded-3xl overflow-hidden border border-surface-secondary shadow-elevated">
-      {/* Loading overlay */}
       {isLoading && (
         <div className="absolute inset-0 z-[1000] bg-surface-primary/60 backdrop-blur-sm flex items-center justify-center">
           <div className="flex items-center gap-3 glass-card-solid px-5 py-3 rounded-2xl shadow-elevated">
@@ -136,59 +215,37 @@ export default function InteractiveMap({
         />
 
         <MapClickHandler onMapClick={handleMapClick} />
+        <MapViewportBridge />
 
         {selectedLocation && (
           <FlyToLocation lat={selectedLocation.lat} lon={selectedLocation.lon} />
         )}
 
-        {landmarks.map((lm) => {
-          const riskLevel = landmarkRiskLevels[lm.name];
-          const color = riskLevel ? getRiskHexColor(riskLevel) : '#3b82f6';
-          const isSelected = selectedLocation?.name === lm.name;
-
-          return (
-            <Marker
-              key={lm.name}
-              position={[lm.lat, lm.lon]}
-              icon={createColoredIcon(color, isSelected)}
-              eventHandlers={{
-                click: () => handleLandmarkClick(lm),
-              }}
-            >
-              <Popup>
-                <div className="text-center">
-                  <strong className="text-sm">{lm.name}</strong>
-                  <p className="text-xs text-gray-500 mt-1">{lm.description}</p>
-                  <button
-                    onClick={() => handleLandmarkClick(lm)}
-                    className="mt-2 text-xs px-3 py-1 bg-green-500 text-white rounded-full hover:bg-green-600"
-                  >
-                    View Data
-                  </button>
-                </div>
-              </Popup>
-            </Marker>
-          );
-        })}
-
-        {clickedPos && !landmarks.some((lm) => lm.lat === clickedPos.lat && lm.lon === clickedPos.lon) && (
-          <Marker
-            position={[clickedPos.lat, clickedPos.lon]}
-            icon={createColoredIcon('#8b5cf6', true)}
-          >
-            <Popup>
-              <div className="text-center text-xs">
-                <strong>Selected Point</strong>
-                <p className="text-gray-500">
-                  {clickedPos.lat.toFixed(4)}, {clickedPos.lon.toFixed(4)}
-                </p>
-              </div>
-            </Popup>
-          </Marker>
-        )}
+        <LayerManager
+          markerLayer={{
+            landmarks,
+            selectedLocation,
+            clickedPos,
+            landmarkRiskLevels,
+            onLandmarkClick: handleLandmarkClick,
+            onClickedPointSelect: handleClickedPointSelect,
+          }}
+          points={points}
+          selectedMetric={selectedMetric}
+          selectedTimeIndex={selectedTimeIndex}
+          dismissedAlerts={dismissedAlerts}
+          onDismissAlert={(id) => {
+            setDismissedAlerts((prev) => {
+              const next = new Set(prev);
+              next.add(id);
+              return next;
+            });
+          }}
+          userLocation={userLocation}
+          safestPoint={safestPoint}
+        />
       </MapContainer>
 
-      {/* Map legend */}
       <div className="absolute bottom-4 left-4 z-[1000] glass-card rounded-2xl px-4 py-3 text-xs">
         <p className="font-semibold text-content-primary mb-2">Risk Level</p>
         <div className="flex items-center gap-3">
