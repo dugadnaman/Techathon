@@ -115,7 +115,7 @@ export default function MapChatBox({ selectedLocation }: MapChatBoxProps) {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-w-0">
       {/* Chat Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-surface-secondary bg-accent/5">
         <div className="flex items-center gap-2">
@@ -139,7 +139,7 @@ export default function MapChatBox({ selectedLocation }: MapChatBoxProps) {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 space-y-3">
         <AnimatePresence initial={false}>
           {messages.length === 0 ? (
             <motion.div
@@ -177,10 +177,10 @@ export default function MapChatBox({ selectedLocation }: MapChatBoxProps) {
                     msg.role === 'user'
                       ? 'bg-accent text-white rounded-tr-md'
                       : 'bg-surface-secondary text-content-primary rounded-tl-md'
-                  }`}
+                  } break-words overflow-hidden`}
                 >
                   {msg.role === 'assistant' ? (
-                    <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 prose-headings:my-1 dark:prose-invert">
+                    <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 prose-headings:my-1 prose-pre:whitespace-pre-wrap prose-pre:break-words prose-code:break-words dark:prose-invert">
                       <ReactMarkdown>{msg.content}</ReactMarkdown>
                     </div>
                   ) : (

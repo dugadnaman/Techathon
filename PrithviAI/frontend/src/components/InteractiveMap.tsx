@@ -179,6 +179,17 @@ export default function InteractiveMap({
           0%, 100% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.3); opacity: 0.8; }
         }
+        .leaflet-popup-content-wrapper {
+          border-radius: 16px;
+        }
+        .leaflet-popup-content {
+          margin: 10px 12px;
+          max-width: 220px;
+          word-break: break-word;
+        }
+        .leaflet-popup-tip {
+          box-shadow: none;
+        }
       `}</style>
 
       <MapContainer

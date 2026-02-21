@@ -213,7 +213,7 @@ function MapExplorerContent() {
   }, [filteredMapPoints, handleLocationSelect]);
 
   return (
-    <div className="min-h-screen bg-surface-primary pt-16">
+    <div className="min-h-screen bg-surface-primary pt-16 overflow-x-hidden">
       <Navbar language={language} onLanguageChange={() => {}} />
 
       <div className="glass-card-solid border-b border-surface-secondary">
@@ -278,13 +278,13 @@ function MapExplorerContent() {
         </div>
       </div>
 
-      <div className="max-w-[1920px] mx-auto p-4">
-        <div className="space-y-3 mb-3">
+      <div className="max-w-[1720px] mx-auto px-3 py-3 sm:px-4 sm:py-4">
+        <div className="space-y-2 mb-2">
           <MetricSelector />
           <MetricMiniCards point={selectedPoint} selectedMetric={selectedMetric} />
         </div>
 
-        <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
           <button
             onClick={findSafestNearby}
             className="min-h-[44px] px-4 rounded-xl bg-accent text-white text-sm font-medium"
@@ -300,10 +300,10 @@ function MapExplorerContent() {
           ) : null}
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 lg:h-[calc(100vh-17rem)]">
+        <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 lg:h-[calc(100vh-15.5rem)] min-w-0">
           <motion.div
             layout
-            className="relative flex-1 min-h-[360px] h-[58vh] sm:h-[62vh] lg:h-auto"
+            className="relative flex-1 min-w-0 min-h-[340px] h-[56vh] sm:h-[60vh] lg:h-auto"
             transition={{ duration: 0.4, ease: EASE_OUT }}
           >
             <InteractiveMap
@@ -330,7 +330,7 @@ function MapExplorerContent() {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="self-end lg:self-center p-2.5 min-h-[44px] min-w-[44px] glass-card-solid rounded-2xl shadow-elevated z-10 text-content-secondary transition-colors"
+            className="self-end lg:self-center p-2.5 min-h-[44px] min-w-[44px] glass-card-solid rounded-2xl shadow-elevated z-10 text-content-secondary transition-colors shrink-0"
             aria-label={sidebarOpen ? t('closeSidebar', language) : t('openSidebar', language)}
           >
             {sidebarOpen ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -343,7 +343,7 @@ function MapExplorerContent() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 8 }}
                 transition={{ duration: 0.4, ease: EASE_OUT }}
-                className="w-full lg:w-[420px] shrink-0 glass-card-solid rounded-3xl border border-surface-secondary shadow-elevated flex flex-col overflow-hidden"
+                className="w-full lg:w-[420px] xl:w-[440px] min-w-0 shrink-0 glass-card-solid rounded-3xl border border-surface-secondary shadow-elevated flex flex-col overflow-hidden"
               >
                 <div className="flex border-b border-surface-secondary">
                   <button
@@ -370,7 +370,7 @@ function MapExplorerContent() {
                   </button>
                 </div>
 
-                <div className="flex-1 overflow-hidden">
+                <div className="flex-1 min-h-0 overflow-hidden">
                   {sidebarTab === 'data' ? (
                     <DataPanel data={locationData} isLoading={isLoadingData} error={dataError} language={language} />
                   ) : (
