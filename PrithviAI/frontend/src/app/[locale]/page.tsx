@@ -190,7 +190,12 @@ export default function HomePage() {
   return (
     <>
       {/* ═══════════════ CINEMATIC HERO (HeroV2) ═══════════════ */}
-      <HeroV2 aqi={envData?.aqi ?? 72} />
+      <HeroV2
+        aqi={envData?.aqi ?? 72}
+        safetyIndex={safetyIndex}
+        loading={loading}
+        locationLabel={displayCity}
+      />
 
       {/* ═══════════════ CONTROLS BAR ═══════════════ */}
       <section className="py-3 px-3 sm:px-4 max-w-5xl mx-auto">
