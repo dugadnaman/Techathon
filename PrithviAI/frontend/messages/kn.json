@@ -37,7 +37,8 @@
     "errorLoadingData": "Error loading data",
     "fetchingEnvironmentData": "Fetching environment data...",
     "openMenu": "Open menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "child": "Child"
   },
   "environment": {
     "temperature": "ತಾಪಮಾನ",

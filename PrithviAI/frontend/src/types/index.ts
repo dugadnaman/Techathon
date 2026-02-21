@@ -6,7 +6,7 @@
 // ─── Enums ───────────────────────────────────────────────
 
 export type RiskLevel = 'LOW' | 'MODERATE' | 'HIGH';
-export type AgeGroup = 'elderly' | 'adult';
+export type AgeGroup = 'elderly' | 'adult' | 'child';
 export type ActivityIntent = 'walking' | 'outdoor_work' | 'rest' | 'exercise' | 'commute';
 export type Language =
   | 'en' | 'hi' | 'mr' | 'bn' | 'ta' | 'te' | 'kn' | 'ml'

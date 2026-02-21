@@ -12,6 +12,10 @@ import type {
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL || '').trim().replace(/\/+$/, '');
 
+function toBackendAgeGroup(ageGroup: AgeGroup): 'elderly' | 'adult' {
+  return ageGroup === 'child' ? 'adult' : ageGroup;
+}
+
 // ─── Generic Fetch Helper ────────────────────────────────
 
 async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
@@ -64,13 +68,14 @@ export async function assessRisk(
   activity: ActivityIntent = 'walking',
   language: Language = 'en',
 ): Promise<SafetyIndex> {
+  const backendAgeGroup = toBackendAgeGroup(age_group);
   return apiFetch('/api/risk/assess', {
     method: 'POST',
     body: JSON.stringify({
       latitude: lat,
       longitude: lon,
       city,
-      age_group,
+      age_group: backendAgeGroup,
       activity,
       language,
     }),
@@ -83,13 +88,14 @@ export async function getAlerts(
   city = 'Mumbai',
   age_group: AgeGroup = 'elderly',
 ): Promise<HealthAlert[]> {
+  const backendAgeGroup = toBackendAgeGroup(age_group);
   return apiFetch('/api/risk/alerts', {
     method: 'POST',
     body: JSON.stringify({
       latitude: lat,
       longitude: lon,
       city,
-      age_group,
+      age_group: backendAgeGroup,
     }),
   });
 }
@@ -100,9 +106,10 @@ export async function getDailySummary(
   city = 'Mumbai',
   age_group: AgeGroup = 'elderly',
 ): Promise<DailySummary> {
+  const backendAgeGroup = toBackendAgeGroup(age_group);
   return apiFetch('/api/risk/daily-summary', {
     method: 'POST',
-    body: JSON.stringify({ latitude: lat, longitude: lon, city, age_group }),
+    body: JSON.stringify({ latitude: lat, longitude: lon, city, age_group: backendAgeGroup }),
   });
 }
 
@@ -117,6 +124,7 @@ export async function sendChatMessage(
   language: Language = 'en',
   session_id?: string,
 ): Promise<ChatResponse> {
+  const backendAgeGroup = toBackendAgeGroup(age_group);
   return apiFetch('/api/chat/message', {
     method: 'POST',
     body: JSON.stringify({
@@ -124,7 +132,7 @@ export async function sendChatMessage(
       latitude: lat,
       longitude: lon,
       city,
-      age_group,
+      age_group: backendAgeGroup,
       language,
       session_id,
     }),
@@ -175,8 +183,9 @@ export async function sendMapChatMessage(
   locationName: string,
   conversationHistory: { role: string; content: string }[] = [],
   sessionId?: string,
-  ageGroup = 'elderly',
+  ageGroup: AgeGroup = 'elderly',
 ): Promise<MapChatResponse> {
+  const backendAgeGroup = toBackendAgeGroup(ageGroup);
   return apiFetch('/api/map/chat', {
     method: 'POST',
     body: JSON.stringify({
@@ -184,7 +193,7 @@ export async function sendMapChatMessage(
       latitude: lat,
       longitude: lon,
       location_name: locationName,
-      age_group: ageGroup,
+      age_group: backendAgeGroup,
       session_id: sessionId,
       conversation_history: conversationHistory,
     }),

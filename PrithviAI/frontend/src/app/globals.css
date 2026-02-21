@@ -97,6 +97,24 @@ button, a, input, select {
   transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+select {
+  color-scheme: light;
+}
+
+.dark select {
+  color-scheme: dark;
+}
+
+select option {
+  color: #0f172a;
+  background-color: #ffffff;
+}
+
+.dark select option {
+  color: #f1f5f9;
+  background-color: #0f172a;
+}
+
 button,
 input,
 select,

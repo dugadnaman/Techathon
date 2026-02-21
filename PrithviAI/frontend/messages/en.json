@@ -20,6 +20,7 @@
     "tagline": "AI-driven environmental intelligence that transforms raw data into simple, actionable safety guidance.",
     "seniorCitizen": "Senior Citizen",
     "adult": "Adult",
+    "child": "Child",
     "walking": "Walking",
     "resting": "Resting",
     "exercise": "Exercise",

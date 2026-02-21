@@ -52,6 +52,7 @@ const FLAT_KEY_MAP: Record<string, string> = {
   liveEnvironmentData: 'common.liveEnvironmentData',
   seniorCitizen: 'common.seniorCitizen',
   adult: 'common.adult',
+  child: 'common.child',
   walking: 'common.walking',
   resting: 'common.resting',
   exercise: 'common.exercise',

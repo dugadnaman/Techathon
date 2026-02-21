@@ -246,6 +246,7 @@ export default function HomePage() {
               >
                 <option value="elderly">{t('seniorCitizen', language)}</option>
                 <option value="adult">{t('adult', language)}</option>
+                <option value="child">{t('child', language)}</option>
               </select>
             </div>
 
