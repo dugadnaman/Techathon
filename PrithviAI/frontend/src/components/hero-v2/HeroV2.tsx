@@ -19,12 +19,10 @@ import dynamic from 'next/dynamic';
 import { useLocale } from 'next-intl';
 import NavbarV2 from './NavbarV2';
 import GlowOverlay from './GlowOverlay';
-import DataConfidenceBadge from '@/components/DataConfidenceBadge';
-import { AnimatedCounter } from '@/components/motion';
+import SafetyIndexDisplay from '@/components/SafetyIndex';
 import { t } from '@/lib/translations';
-import { formatLocalizedNumber, getRiskColor, getScoreRingColor } from '@/lib/utils';
+import { formatLocalizedNumber } from '@/lib/utils';
 import type { Language, SafetyIndex } from '@/types';
-import { tRisk } from '@/lib/translations';
 
 // Lazy load heavy canvas components
 const Starfield = dynamic(() => import('./Starfield'), { ssr: false });
@@ -39,15 +37,12 @@ interface HeroV2Props {
   safetyIndex?: SafetyIndex | null;
   /** Loading state for safety data */
   loading?: boolean;
-  /** Current location label */
-  locationLabel?: string;
 }
 
 export default function HeroV2({
   aqi = 72,
   safetyIndex = null,
   loading = false,
-  locationLabel = '',
 }: HeroV2Props) {
   const locale = useLocale() as Language;
   const [currentAqi, setCurrentAqi] = useState(aqi);
@@ -253,101 +248,9 @@ export default function HeroV2({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.72, ease: EASE_OUT }}
             className="mt-6 w-full"
-            style={{ maxWidth: isMobile ? 360 : 720 }}
+            style={{ maxWidth: isMobile ? 360 : 760 }}
           >
-            <div
-              className="glass-card-solid rounded-3xl border border-white/10"
-              style={{
-                background: 'linear-gradient(160deg, rgba(17,24,39,0.92), rgba(30,27,75,0.82))',
-                backdropFilter: 'blur(14px)',
-              }}
-            >
-              <div className="px-4 sm:px-6 pt-4 sm:pt-5 pb-5">
-                <div className="text-center">
-                  <h3 className="text-lg sm:text-2xl font-semibold text-white">
-                    {t('seniorSafetyIndex', locale)}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-white/70 mt-1">
-                    {t('realtimeSafetyAssessment', locale)}
-                    {locationLabel ? ` · ${locationLabel}` : ''}
-                  </p>
-                </div>
-
-                {safetyIndex?.data_quality && (
-                  <div className="mt-3">
-                    <DataConfidenceBadge dataQuality={safetyIndex.data_quality} />
-                  </div>
-                )}
-
-                <div className="mt-4 flex justify-center">
-                  {loading ? (
-                    <div className="w-40 h-40 rounded-full border-4 border-surface-secondary animate-pulse" />
-                  ) : safetyIndex ? (
-                    (() => {
-                      const score = safetyIndex.overall_score;
-                      const ringColor = getScoreRingColor(score);
-                      const circumference = 2 * Math.PI * 60;
-                      const progress = (score / 100) * circumference;
-                      return (
-                        <div className="relative w-36 h-36 sm:w-40 sm:h-40">
-                          <svg className="w-full h-full -rotate-90" viewBox="0 0 160 160">
-                            <circle
-                              cx="80"
-                              cy="80"
-                              r="60"
-                              fill="none"
-                              stroke="rgba(255,255,255,0.14)"
-                              strokeWidth="10"
-                            />
-                            <motion.circle
-                              cx="80"
-                              cy="80"
-                              r="60"
-                              fill="none"
-                              stroke={ringColor}
-                              strokeWidth="10"
-                              strokeLinecap="round"
-                              strokeDasharray={circumference}
-                              initial={{ strokeDashoffset: circumference }}
-                              animate={{ strokeDashoffset: circumference - progress }}
-                              transition={{ duration: 1.2, ease: EASE_OUT, delay: 0.2 }}
-                            />
-                          </svg>
-                          <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="inline-flex items-center justify-center px-3 py-1 rounded-2xl bg-black/30">
-                              <span className={`text-4xl font-extrabold tracking-tighter ${getRiskColor(safetyIndex.overall_level)}`}>
-                                <AnimatedCounter value={score} duration={1.2} />
-                              </span>
-                            </span>
-                            <span
-                              className={`mt-2 px-3 py-1 rounded-full text-xs font-semibold text-white ${
-                                safetyIndex.overall_level === 'LOW'
-                                  ? 'bg-risk-low'
-                                  : safetyIndex.overall_level === 'MODERATE'
-                                    ? 'bg-risk-moderate'
-                                    : 'bg-risk-high'
-                              }`}
-                            >
-                              {tRisk(safetyIndex.overall_level, locale)}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })()
-                  ) : (
-                    <div className="w-40 h-40 rounded-full border border-white/20 flex items-center justify-center text-white/70 text-sm">
-                      {t('loading', locale)}...
-                    </div>
-                  )}
-                </div>
-
-                {safetyIndex?.summary ? (
-                  <p className="mt-4 text-sm sm:text-lg text-white/82 leading-relaxed text-center">
-                    {safetyIndex.summary}
-                  </p>
-                ) : null}
-              </div>
-            </div>
+            <SafetyIndexDisplay safetyIndex={safetyIndex} loading={loading} language={locale} />
           </motion.div>
         </div>
 

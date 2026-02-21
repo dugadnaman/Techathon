@@ -60,7 +60,7 @@ export default function SafetyIndexDisplay({ safetyIndex, loading, language = 'e
       {/* Header */}
       <div className="text-center mb-3">
         <h2 className="text-base font-semibold text-content-primary">
-          {t('seniorSafetyIndex', language)}
+          {t('safetyIndex', language)}
         </h2>
         <p className="text-xs text-content-secondary mt-0.5">
           {t('realtimeSafetyAssessment', language)}

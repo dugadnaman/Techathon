@@ -9,7 +9,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocale } from 'next-intl';
 import { HeroV2 } from '@/components/hero-v2';
-import SafetyIndexDisplay from '@/components/SafetyIndex';
 import RiskCard from '@/components/RiskCard';
 import AlertBanner from '@/components/AlertBanner';
 import DailySummaryCard from '@/components/DailySummary';
@@ -194,7 +193,6 @@ export default function HomePage() {
         aqi={envData?.aqi ?? 72}
         safetyIndex={safetyIndex}
         loading={loading}
-        locationLabel={displayCity}
       />
 
       {/* ═══════════════ CONTROLS BAR ═══════════════ */}
@@ -318,20 +316,15 @@ export default function HomePage() {
         </RevealSection>
       </section>
 
-      {/* ═══════════════ SAFETY INDEX + DAILY SUMMARY ═══════════════ */}
+      {/* ═══════════════ DAILY SUMMARY + ENVIRONMENT GLANCE ═══════════════ */}
       <section className="py-2 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <RevealSection>
-            <SafetyIndexDisplay safetyIndex={safetyIndex} loading={loading} language={language} />
+            <DailySummaryCard summary={dailySummary} loading={loading} language={language} />
           </RevealSection>
-          <div className="space-y-4">
-            <RevealSection delay={0.05}>
-              <DailySummaryCard summary={dailySummary} loading={loading} language={language} />
-            </RevealSection>
-            <RevealSection delay={0.1}>
-              <EnvironmentAtGlance data={envData} />
-            </RevealSection>
-          </div>
+          <RevealSection delay={0.05}>
+            <EnvironmentAtGlance data={envData} />
+          </RevealSection>
         </div>
       </section>
 
