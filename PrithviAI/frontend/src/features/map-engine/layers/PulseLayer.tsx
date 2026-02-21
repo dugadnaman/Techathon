@@ -21,7 +21,7 @@ function PulseLayerComponent({ points, selectedMetric, timeIndex }: PulseLayerPr
       const series = point.metricHourly[selectedMetric];
       const value = series[Math.max(0, Math.min(series.length - 1, timeIndex))];
       const state = thresholdState(selectedMetric, value);
-      if (state === 'normal') return null;
+      if (state === 'normal' || state === 'moderate') return null;
 
       const pulseDuration =
         state === 'severe' ? 1.1 :
@@ -31,9 +31,16 @@ function PulseLayerComponent({ points, selectedMetric, timeIndex }: PulseLayerPr
         point,
         pulseDuration,
         color,
+        state,
+        metricValue: value,
       };
     })
-    .filter((item): item is NonNullable<typeof item> => item !== null);
+    .filter((item): item is NonNullable<typeof item> => item !== null)
+    .sort((a, b) => {
+      const stateWeight = (value: 'high' | 'severe') => (value === 'severe' ? 2 : 1);
+      return stateWeight(b.state) - stateWeight(a.state) || b.metricValue - a.metricValue;
+    })
+    .slice(0, 36);
 
   if (pulseMarkers.length === 0) return null;
 

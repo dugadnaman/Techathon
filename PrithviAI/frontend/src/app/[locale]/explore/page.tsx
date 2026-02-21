@@ -98,6 +98,7 @@ function MapExplorerContent() {
 
   const {
     mapPoints,
+    heatmapPoints,
     isLoadingVisibleData,
     microAlerts,
     getOrFetchLocationData,
@@ -312,6 +313,7 @@ function MapExplorerContent() {
               onLocationSelect={handleLocationSelect}
               landmarkRiskLevels={landmarkRiskLevels}
               points={filteredMapPoints}
+              heatmapPoints={heatmapPoints}
               userLocation={userLocation}
               safestPoint={safestPoint}
               isLoading={isLoadingData}

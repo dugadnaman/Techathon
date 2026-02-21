@@ -10,6 +10,7 @@ function HeatmapLayerComponent({ points, selectedMetric, timeIndex }: HeatmapLay
   const renderer = useMemo(() => L.canvas({ padding: 0.3 }), []);
 
   if (points.length === 0) return null;
+  const isRegionalSurface = points.length > 60;
 
   return (
     <>
@@ -23,10 +24,16 @@ function HeatmapLayerComponent({ points, selectedMetric, timeIndex }: HeatmapLay
         const value = series[Math.max(0, Math.min(series.length - 1, timeIndex))];
         const threshold = thresholdState(selectedMetric, value);
         const color = getMetricColor(selectedMetric, value);
-        const radius =
-          threshold === 'severe' ? 420 :
+        const radius = isRegionalSurface
+          ? threshold === 'severe' ? 560000 :
+            threshold === 'high' ? 470000 :
+              threshold === 'moderate' ? 380000 : 300000
+          : threshold === 'severe' ? 420 :
             threshold === 'high' ? 340 :
               threshold === 'moderate' ? 280 : 220;
+        const fillOpacity = isRegionalSurface
+          ? threshold === 'normal' ? 0.14 : threshold === 'moderate' ? 0.2 : threshold === 'high' ? 0.26 : 0.3
+          : threshold === 'normal' ? 0.15 : threshold === 'moderate' ? 0.24 : threshold === 'high' ? 0.31 : 0.36;
 
         return (
           <Circle
@@ -39,7 +46,7 @@ function HeatmapLayerComponent({ points, selectedMetric, timeIndex }: HeatmapLay
               color,
               fillColor: color,
               weight: 0,
-              fillOpacity: threshold === 'normal' ? 0.15 : threshold === 'moderate' ? 0.24 : threshold === 'high' ? 0.31 : 0.36,
+              fillOpacity,
             }}
           />
         );

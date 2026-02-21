@@ -12,6 +12,13 @@ import type { Landmark, RiskLevel } from '@/types';
 import { LayerManager } from '@/features/map-engine/layers/LayerManager';
 import { useMapContext } from '@/features/map-engine/context/MapContext';
 import type { MapPointData } from '@/features/map-engine/layers/types';
+import {
+  ASIA_MAP_BOUNDS,
+  ASIA_MAP_CENTER,
+  ASIA_DEFAULT_ZOOM,
+  ASIA_MAX_ZOOM,
+  ASIA_MIN_ZOOM,
+} from '@/features/map-engine/logic/asiaConfig';
 
 import 'leaflet/dist/leaflet.css';
 
@@ -83,6 +90,7 @@ interface InteractiveMapProps {
   onLocationSelect: (lat: number, lon: number, name: string) => void;
   landmarkRiskLevels?: Record<string, RiskLevel>;
   points?: MapPointData[];
+  heatmapPoints?: MapPointData[];
   userLocation?: { lat: number; lon: number } | null;
   safestPoint?: { lat: number; lon: number; name: string } | null;
   isLoading?: boolean;
@@ -94,6 +102,7 @@ export default function InteractiveMap({
   onLocationSelect,
   landmarkRiskLevels = {},
   points = [],
+  heatmapPoints = [],
   userLocation = null,
   safestPoint = null,
   isLoading = false,
@@ -193,8 +202,15 @@ export default function InteractiveMap({
       `}</style>
 
       <MapContainer
-        center={[19.076, 72.8777]}
-        zoom={12}
+        center={ASIA_MAP_CENTER}
+        zoom={ASIA_DEFAULT_ZOOM}
+        minZoom={ASIA_MIN_ZOOM}
+        maxZoom={ASIA_MAX_ZOOM}
+        maxBounds={[
+          [ASIA_MAP_BOUNDS.south, ASIA_MAP_BOUNDS.west],
+          [ASIA_MAP_BOUNDS.north, ASIA_MAP_BOUNDS.east],
+        ]}
+        maxBoundsViscosity={1}
         style={{ width: '100%', height: '100%' }}
         zoomControl={true}
       >
@@ -224,6 +240,7 @@ export default function InteractiveMap({
             onClickedPointSelect: handleClickedPointSelect,
           }}
           points={points}
+          heatmapPoints={heatmapPoints}
           selectedMetric={selectedMetric}
           selectedTimeIndex={selectedTimeIndex}
           dismissedAlerts={dismissedAlerts}

@@ -12,6 +12,7 @@ import type { MapMetric } from '@/features/map-engine/context/MapContext';
 interface LayerManagerProps {
   markerLayer: MarkerLayerProps;
   points: MapPointData[];
+  heatmapPoints?: MapPointData[];
   selectedMetric: MapMetric;
   selectedTimeIndex: number;
   dismissedAlerts: Set<string>;
@@ -23,6 +24,7 @@ interface LayerManagerProps {
 function LayerManagerComponent({
   markerLayer,
   points,
+  heatmapPoints,
   selectedMetric,
   selectedTimeIndex,
   dismissedAlerts,
@@ -30,15 +32,17 @@ function LayerManagerComponent({
   userLocation,
   safestPoint,
 }: LayerManagerProps) {
+  const surfacePoints = heatmapPoints ?? points;
+
   return (
     <>
       <HeatmapLayer
-        points={points}
+        points={surfacePoints}
         selectedMetric={selectedMetric}
         timeIndex={selectedTimeIndex}
       />
       <PulseLayer
-        points={points}
+        points={surfacePoints}
         selectedMetric={selectedMetric}
         timeIndex={selectedTimeIndex}
       />
