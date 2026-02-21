@@ -29,13 +29,26 @@ function MarkerLayerComponent({
   selectedLocation,
   clickedPos,
   landmarkRiskLevels,
+  pointsByName,
+  selectedMetric,
+  selectedTimeIndex,
   onLandmarkClick,
   onClickedPointSelect,
 }: MarkerLayerProps) {
+  const trendArrow = (trend: 'up' | 'down' | 'stable') => {
+    if (trend === 'up') return <span className="text-red-500 font-semibold">↑</span>;
+    if (trend === 'down') return <span className="text-green-500 font-semibold">↓</span>;
+    return <span className="text-gray-500 font-semibold">→</span>;
+  };
+
   return (
     <>
       {landmarks.map((landmark) => {
         const riskLevel = landmarkRiskLevels[landmark.name];
+        const point = pointsByName[landmark.name];
+        const trend = point?.trendByMetric[selectedMetric] ?? 'stable';
+        const metricSeries = point?.metricHourly[selectedMetric] ?? [];
+        const metricValue = metricSeries[Math.max(0, Math.min(selectedTimeIndex, metricSeries.length - 1))];
         const color = riskLevel ? getRiskHexColor(riskLevel) : '#3b82f6';
         const isSelected = selectedLocation?.name === landmark.name;
 
@@ -52,6 +65,13 @@ function MarkerLayerComponent({
               <div className="text-center">
                 <strong className="text-sm">{landmark.name}</strong>
                 <p className="text-xs text-gray-500 mt-1">{landmark.description}</p>
+                {Number.isFinite(metricValue) ? (
+                  <p className="text-xs text-gray-700 mt-1 inline-flex items-center gap-1">
+                    <span className="capitalize">{selectedMetric.replace('_', ' ')}</span>
+                    <span className="font-semibold">{metricValue.toFixed(selectedMetric === 'temperature' || selectedMetric === 'rainfall' || selectedMetric === 'uv' ? 1 : 0)}</span>
+                    {trendArrow(trend)}
+                  </p>
+                ) : null}
                 <button
                   onClick={() => onLandmarkClick(landmark)}
                   className="mt-2 text-xs px-3 py-1 bg-green-500 text-white rounded-full hover:bg-green-600"

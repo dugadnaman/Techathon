@@ -147,12 +147,16 @@ export default function InteractiveMap({
   );
 
   const pointsByName = useMemo(
+    () => Object.fromEntries(points.map((point) => [point.name, point] as const)),
+    [points],
+  );
+  const pointRiskByName = useMemo(
     () => Object.fromEntries(points.map((point) => [point.name, point.riskLevel] as const)),
     [points],
   );
   const resolvedRiskLevels = useMemo(
-    () => ({ ...landmarkRiskLevels, ...pointsByName }),
-    [landmarkRiskLevels, pointsByName],
+    () => ({ ...landmarkRiskLevels, ...pointRiskByName }),
+    [landmarkRiskLevels, pointRiskByName],
   );
 
   const tileUrl = isDark
@@ -202,6 +206,9 @@ export default function InteractiveMap({
             selectedLocation,
             clickedPos,
             landmarkRiskLevels: resolvedRiskLevels,
+            pointsByName,
+            selectedMetric,
+            selectedTimeIndex,
             onLandmarkClick: handleLandmarkClick,
             onClickedPointSelect: handleClickedPointSelect,
           }}

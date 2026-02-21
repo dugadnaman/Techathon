@@ -31,6 +31,9 @@ export interface MarkerLayerProps {
   selectedLocation: { lat: number; lon: number; name: string } | null;
   clickedPos: { lat: number; lon: number } | null;
   landmarkRiskLevels: Record<string, RiskLevel>;
+  pointsByName: Record<string, MapPointData>;
+  selectedMetric: MapMetric;
+  selectedTimeIndex: number;
   onLandmarkClick: (landmark: Landmark) => void;
   onClickedPointSelect: (lat: number, lon: number) => void;
 }

@@ -21,6 +21,7 @@ import { useMapEngineData } from '@/features/map-engine/logic/useMapEngineData';
 import { MetricSelector } from '@/features/map-engine/ui/MetricSelector';
 import { TimeSlider } from '@/features/map-engine/ui/TimeSlider';
 import { MetricMiniCards } from '@/features/map-engine/ui/MetricMiniCards';
+import { LocationMiniCard } from '@/features/map-engine/ui/LocationMiniCard';
 
 const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -144,6 +145,11 @@ function MapExplorerContent() {
     }
     return best;
   }, [filteredMapPoints, selectedLocation]);
+
+  const miniCardPoint = useMemo(() => {
+    if (!selectedLocation) return null;
+    return selectedPoint;
+  }, [selectedLocation, selectedPoint]);
 
   const handleLocationSelect = useCallback(
     async (lat: number, lon: number, name: string) => {
@@ -297,7 +303,7 @@ function MapExplorerContent() {
         <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 lg:h-[calc(100vh-17rem)]">
           <motion.div
             layout
-            className="flex-1 min-h-[360px] h-[58vh] sm:h-[62vh] lg:h-auto"
+            className="relative flex-1 min-h-[360px] h-[58vh] sm:h-[62vh] lg:h-auto"
             transition={{ duration: 0.4, ease: EASE_OUT }}
           >
             <InteractiveMap
@@ -309,6 +315,15 @@ function MapExplorerContent() {
               userLocation={userLocation}
               safestPoint={safestPoint}
               isLoading={isLoadingData}
+            />
+            <LocationMiniCard
+              point={miniCardPoint}
+              selectedMetric={selectedMetric}
+              onAskAI={() => {
+                setSidebarOpen(true);
+                setSidebarTab('chat');
+              }}
+              onClose={() => setSelectedLocation(null)}
             />
           </motion.div>
 
