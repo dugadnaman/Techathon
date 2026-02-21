@@ -33,7 +33,6 @@ function createColoredIcon(color: string, isSelected = false): L.DivIcon {
       border: ${border}px solid white;
       border-radius: 50%;
       box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-      ${isSelected ? 'animation: pulse 1.5s ease infinite;' : ''}
     "></div>`,
     iconSize: [size + border * 2, size + border * 2],
     iconAnchor: [(size + border * 2) / 2, (size + border * 2) / 2],
@@ -115,13 +114,6 @@ export default function InteractiveMap({
           </div>
         </div>
       )}
-
-      <style jsx global>{`
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.3); opacity: 0.8; }
-        }
-      `}</style>
 
       <MapContainer
         center={[19.076, 72.8777]}
