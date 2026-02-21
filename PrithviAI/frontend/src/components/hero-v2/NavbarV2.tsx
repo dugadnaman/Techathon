@@ -11,7 +11,6 @@ import { useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { t } from '@/lib/translations';
 import type { Language } from '@/types';
 
@@ -61,7 +60,6 @@ export default function NavbarV2() {
 
         {/* Right Side */}
         <div className="hidden md:flex items-center gap-4">
-          <LanguageSwitcher />
           <ThemeToggle />
           <Link
             href="/explore"
@@ -99,7 +97,7 @@ export default function NavbarV2() {
           >
             <div className="px-5 py-5 h-full overflow-y-auto flex flex-col">
               <div className="flex items-center justify-between mb-6">
-                <span className="text-white/90 text-sm font-semibold">{t('language.switcher', locale)}</span>
+                <span className="text-white/90 text-sm font-semibold">{t('common.appName', locale)}</span>
                 <button
                   className="text-white p-2 min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
                   onClick={() => setMobileOpen(false)}
@@ -121,7 +119,6 @@ export default function NavbarV2() {
               ))}
               <div className="pt-5 mt-auto space-y-3">
                 <div className="flex items-center gap-3">
-                  <LanguageSwitcher />
                   <ThemeToggle />
                 </div>
                 <Link

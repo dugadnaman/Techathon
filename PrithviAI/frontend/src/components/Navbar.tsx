@@ -12,7 +12,6 @@ import { Menu, X, Home, Map, MessageCircle, BarChart3 } from 'lucide-react';
 import type { Language } from '@/types';
 import { t } from '@/lib/translations';
 import ThemeToggle from '@/components/ThemeToggle';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 interface NavbarProps {
   language: Language;
@@ -60,7 +59,6 @@ export default function Navbar({ language, onLanguageChange }: NavbarProps) {
 
           {/* Right Side: Language + Theme + Mobile Menu */}
           <div className="flex items-center gap-2">
-            <LanguageSwitcher />
             <ThemeToggle />
 
             {/* Mobile Menu Button */}
@@ -88,7 +86,7 @@ export default function Navbar({ language, onLanguageChange }: NavbarProps) {
           >
             <div className="px-5 py-4 h-full overflow-y-auto flex flex-col">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm text-content-primary font-medium">{t('language.switcher', language)}</span>
+                <span className="text-sm text-content-primary font-medium">{t('common.appName', language)}</span>
                 <button
                   onClick={() => setIsMenuOpen(false)}
                   className="p-2 min-h-[44px] min-w-[44px] rounded-xl text-content-secondary inline-flex items-center justify-center"
@@ -108,9 +106,7 @@ export default function Navbar({ language, onLanguageChange }: NavbarProps) {
                   <span className="font-medium">{link.label}</span>
                 </Link>
               ))}
-              <div className="pt-4 mt-auto">
-                <LanguageSwitcher />
-              </div>
+              <div className="pt-4 mt-auto" />
             </div>
           </motion.div>
         )}

@@ -102,16 +102,16 @@ async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> 
 // ─── Environment Endpoints ───────────────────────────────
 
 export async function getCurrentEnvironment(
-  lat = 19.076,
-  lon = 72.8777,
-  city = 'Mumbai',
+  lat = 18.5204,
+  lon = 73.8567,
+  city = 'Pune',
 ): Promise<EnvironmentData> {
   return apiFetch(`/api/environment/current?lat=${lat}&lon=${lon}&city=${city}`);
 }
 
 export async function getEnvironmentForecast(
-  lat = 19.076,
-  lon = 72.8777,
+  lat = 18.5204,
+  lon = 73.8567,
 ): Promise<{ forecast: EnvironmentData[] }> {
   return apiFetch(`/api/environment/forecast?lat=${lat}&lon=${lon}`);
 }
@@ -119,9 +119,9 @@ export async function getEnvironmentForecast(
 // ─── Risk Assessment Endpoints ───────────────────────────
 
 export async function assessRisk(
-  lat = 19.076,
-  lon = 72.8777,
-  city = 'Mumbai',
+  lat = 18.5204,
+  lon = 73.8567,
+  city = 'Pune',
   age_group: AgeGroup = 'elderly',
   activity: ActivityIntent = 'walking',
   language: Language = 'en',
@@ -142,9 +142,9 @@ export async function assessRisk(
 }
 
 export async function getAlerts(
-  lat = 19.076,
-  lon = 72.8777,
-  city = 'Mumbai',
+  lat = 18.5204,
+  lon = 73.8567,
+  city = 'Pune',
   age_group: AgeGroup = 'elderly',
 ): Promise<HealthAlert[]> {
   const backendAgeGroup = toBackendAgeGroup(age_group);
@@ -160,9 +160,9 @@ export async function getAlerts(
 }
 
 export async function getDailySummary(
-  lat = 19.076,
-  lon = 72.8777,
-  city = 'Mumbai',
+  lat = 18.5204,
+  lon = 73.8567,
+  city = 'Pune',
   age_group: AgeGroup = 'elderly',
 ): Promise<DailySummary> {
   const backendAgeGroup = toBackendAgeGroup(age_group);
@@ -177,9 +177,9 @@ export async function getDailySummary(
 
 export async function sendChatMessage(
   message: string,
-  lat = 19.076,
-  lon = 72.8777,
-  city = 'Mumbai',
+  lat = 18.5204,
+  lon = 73.8567,
+  city = 'Pune',
   age_group: AgeGroup = 'elderly',
   language: Language = 'en',
   session_id?: string,

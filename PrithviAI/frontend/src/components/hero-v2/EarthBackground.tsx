@@ -154,10 +154,6 @@ export default function EarthBackground() {
     // City dots (key cities with glow)
     const cities = [
       { lon: 73.85, lat: 18.52, name: 'Pune' },
-      { lon: 72.87, lat: 19.07, name: 'Mumbai' },
-      { lon: 77.20, lat: 28.61, name: 'Delhi' },
-      { lon: 77.59, lat: 12.97, name: 'Bangalore' },
-      { lon: 80.27, lat: 13.08, name: 'Chennai' },
     ];
 
     for (const city of cities) {
