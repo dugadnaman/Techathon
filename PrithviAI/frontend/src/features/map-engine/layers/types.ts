@@ -1,6 +1,6 @@
 'use client';
 
-import type { Landmark, RiskLevel } from '@/types';
+import type { Landmark, LocationData, RiskLevel } from '@/types';
 import type { MapMetric } from '@/features/map-engine/context/MapContext';
 
 export interface MapMetricValues {
@@ -18,10 +18,12 @@ export interface MapPointData {
   lat: number;
   lon: number;
   riskLevel: RiskLevel;
+  trendByMetric: Record<MapMetric, 'up' | 'down' | 'stable'>;
   metricValues: MapMetricValues;
   metricHourly: Record<MapMetric, number[]>;
   alerts: string[];
   primaryRisk: string;
+  locationData: LocationData;
 }
 
 export interface MarkerLayerProps {
@@ -48,6 +50,7 @@ export interface PulseLayerProps {
 export interface AlertLayerProps {
   points: MapPointData[];
   timeIndex: number;
+  selectedMetric: MapMetric;
   dismissedAlerts: Set<string>;
   onDismissAlert: (id: string) => void;
 }

@@ -12,7 +12,6 @@ import type { Landmark, RiskLevel } from '@/types';
 import { LayerManager } from '@/features/map-engine/layers/LayerManager';
 import { useMapContext } from '@/features/map-engine/context/MapContext';
 import type { MapPointData } from '@/features/map-engine/layers/types';
-import type { MapMetric } from '@/features/map-engine/context/MapContext';
 
 import 'leaflet/dist/leaflet.css';
 
@@ -83,6 +82,9 @@ interface InteractiveMapProps {
   selectedLocation: { lat: number; lon: number; name: string } | null;
   onLocationSelect: (lat: number, lon: number, name: string) => void;
   landmarkRiskLevels?: Record<string, RiskLevel>;
+  points?: MapPointData[];
+  userLocation?: { lat: number; lon: number } | null;
+  safestPoint?: { lat: number; lon: number; name: string } | null;
   isLoading?: boolean;
 }
 
@@ -91,13 +93,14 @@ export default function InteractiveMap({
   selectedLocation,
   onLocationSelect,
   landmarkRiskLevels = {},
+  points = [],
+  userLocation = null,
+  safestPoint = null,
   isLoading = false,
 }: InteractiveMapProps) {
   const [clickedPos, setClickedPos] = useState<{ lat: number; lon: number } | null>(null);
   const [isDark, setIsDark] = useState(false);
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
-  const [userLocation] = useState<{ lat: number; lon: number } | null>(null);
-  const [safestPoint] = useState<{ lat: number; lon: number; name: string } | null>(null);
 
   const {
     selectedMetric,
@@ -143,42 +146,14 @@ export default function InteractiveMap({
     [onLocationSelect, setContextSelectedLocation],
   );
 
-  const points = useMemo<MapPointData[]>(() => {
-    return landmarks.map((lm) => {
-      const riskLevel = landmarkRiskLevels[lm.name] || 'MODERATE';
-      const baseScore = riskLevel === 'LOW' ? 25 : riskLevel === 'HIGH' ? 75 : 50;
-      const defaultSeries = Array.from({ length: 25 }, (_, hour) =>
-        Math.max(0, Math.min(100, baseScore + Math.round(Math.sin(hour / 24 * Math.PI * 2) * 5))),
-      );
-
-      return {
-        name: lm.name,
-        lat: lm.lat,
-        lon: lm.lon,
-        riskLevel,
-        primaryRisk: 'AQI',
-        alerts: [],
-        metricValues: {
-          aqi: baseScore * 2,
-          temperature: 22 + baseScore * 0.2,
-          uv: 2 + baseScore * 0.06,
-          rainfall: baseScore * 0.08,
-          humidity: 35 + baseScore * 0.5,
-          noise: 45 + baseScore * 0.4,
-          safety_score: baseScore,
-        },
-        metricHourly: {
-          aqi: defaultSeries.map((v) => v * 2),
-          temperature: defaultSeries.map((v) => 18 + v * 0.25),
-          uv: defaultSeries.map((v) => 1 + v * 0.08),
-          rainfall: defaultSeries.map((v) => v * 0.12),
-          humidity: defaultSeries.map((v) => 30 + v * 0.55),
-          noise: defaultSeries.map((v) => 40 + v * 0.5),
-          safety_score: defaultSeries,
-        } satisfies Record<MapMetric, number[]>,
-      };
-    });
-  }, [landmarks, landmarkRiskLevels]);
+  const pointsByName = useMemo(
+    () => Object.fromEntries(points.map((point) => [point.name, point.riskLevel] as const)),
+    [points],
+  );
+  const resolvedRiskLevels = useMemo(
+    () => ({ ...landmarkRiskLevels, ...pointsByName }),
+    [landmarkRiskLevels, pointsByName],
+  );
 
   const tileUrl = isDark
     ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
@@ -226,7 +201,7 @@ export default function InteractiveMap({
             landmarks,
             selectedLocation,
             clickedPos,
-            landmarkRiskLevels,
+            landmarkRiskLevels: resolvedRiskLevels,
             onLandmarkClick: handleLandmarkClick,
             onClickedPointSelect: handleClickedPointSelect,
           }}

@@ -46,6 +46,7 @@ function LayerManagerComponent({
       <AlertLayer
         points={points}
         timeIndex={selectedTimeIndex}
+        selectedMetric={selectedMetric}
         dismissedAlerts={dismissedAlerts}
         onDismissAlert={onDismissAlert}
       />
